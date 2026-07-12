@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Our Story - Missara Clothing</title>
+  <meta name="description" content="Discover the story behind Missara Clothing, crafting premium Indian ladies wear, kurtas, suits, sarees, and lehengas tailored in Jabalpur.">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Global Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+  
+  <style>
+    /* About Page Specific Layouts */
+    .about-hero {
+      background-color: var(--secondary-pink);
+      padding: 80px 0;
+      text-align: center;
+      margin-bottom: 50px;
+    }
+    
+    .about-hero h1 {
+      font-size: 3rem;
+      margin-bottom: 15px;
+    }
+    
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 50px;
+      align-items: center;
+      margin-bottom: 60px;
+    }
+    
+    .about-text {
+      font-size: 1.05rem;
+      line-height: 1.8;
+      color: var(--text-dark);
+    }
+    
+    .about-text p {
+      margin-bottom: 20px;
+    }
+    
+    .about-quote {
+      font-family: var(--font-heading);
+      font-size: 1.5rem;
+      font-style: italic;
+      color: var(--primary-pink);
+      border-left: 3px solid var(--primary-pink);
+      padding-left: 20px;
+      margin: 30px 0;
+      line-height: 1.5;
+    }
+    
+    .about-img-frame {
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+      background-color: var(--secondary-pink);
+    }
+    
+    .about-values-section {
+      background-color: var(--bg-cream);
+      padding: 60px 0;
+      border-radius: 8px;
+      margin-bottom: 60px;
+    }
+    
+    .value-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 30px;
+    }
+    
+    .value-card {
+      background-color: var(--bg-white);
+      padding: 30px;
+      border-radius: 6px;
+      border: 1px solid var(--border-light);
+      text-align: center;
+      box-shadow: var(--shadow-sm);
+    }
+    
+    .value-card i {
+      font-size: 2rem;
+      color: var(--primary-pink);
+      margin-bottom: 15px;
+    }
+    
+    .value-card h3 {
+      margin-bottom: 12px;
+      font-size: 1.25rem;
+    }
+    
+    .value-card p {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+    
+    @media (max-width: 900px) {
+      .about-grid {
+        grid-template-columns: 1fr;
+        gap: 30px;
+      }
+      .value-cards-grid {
+        grid-template-columns: 1fr;
+      }
+      .about-hero h1 {
+        font-size: 2.2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Announcement Bar Marquee -->
+  <div class="announcement-bar">
+    <div class="announcement-slider">
+      <span class="announcement-item">🌸 FREE SHIPPING ACROSS INDIA | EASY RETURNS 🌸</span>
+      <span class="announcement-item">✨ EXQUISITE ETHNIC LADIES WEAR REVAMP ✨</span>
+      <span class="announcement-item">💖 USE CODE <b>MISSARA10</b> FOR 10% INSTANT DISCOUNT 💖</span>
+    </div>
+  </div>
+
+  <!-- Header -->
+    <header class="main-header">
+    <div class="header-container">
+      <!-- Left actions (Menu and Search) -->
+      <div class="header-left">
+        <button class="menu-toggle-btn open-menu-btn" aria-label="Open Navigation Menu">
+          <i class="fas fa-bars"></i>
+          <span class="btn-text">MENU</span>
+        </button>
+        <button class="search-toggle-btn" id="search-toggle-btn" aria-label="Toggle Search">
+          <i class="fas fa-search"></i>
+          <span class="btn-text">SEARCH</span>
+        </button>
+      </div>
+      
+      <!-- Logo (Centered) -->
+      <div class="logo">
+        <a href="index.html">
+          <img src="images/logo.png" alt="Missara Logo" class="header-logo-img">
+          MISSARA<span class="logo-dot">.</span>
+        </a>
+      </div>
+      
+      <!-- Right actions -->
+      <div class="header-right">
+        <a href="contact.html" class="contact-link">CONTACT US</a>
+        <a href="admin.html" class="header-icon-btn" aria-label="Boutique Owner Portal">
+          <i class="far fa-user"></i>
+        </a>
+        <a href="shop.html?wishlist=true" class="header-icon-btn" aria-label="Wishlist">
+          <i class="far fa-heart"></i>
+          <span class="icon-badge wishlist-count" style="display: none;">0</span>
+        </a>
+        <a href="#" class="header-icon-btn open-cart-btn" aria-label="Shopping Cart">
+          <i class="fas fa-shopping-bag"></i>
+          <span class="icon-badge cart-count" style="display: none;">0</span>
+        </a>
+      </div>
+    </div>
+    
+    <!-- Search Dropdown Overlay -->
+    <div class="search-overlay" id="search-overlay">
+      <div class="container">
+        <form class="search-container" id="search-form">
+          <input type="text" class="search-input" id="search-input" placeholder="Search for Kurtas, Suits, Sarees, Lehengas..." autocomplete="off">
+          <button type="submit" class="search-submit">Search</button>
+        </form>
+      </div>
+    </div>
+  </header>
+
+  <!-- About Hero -->
+  <section class="about-hero">
+    <div class="container">
+      <h1>Our Brand Story</h1>
+      <p style="color:var(--primary-pink); letter-spacing:2px; text-transform:uppercase; font-size:0.85rem; font-weight:600;">Tailoring Elegance Since 2022</p>
+    </div>
+  </section>
+
+  <!-- About Content -->
+  <main class="container">
+    <div class="about-grid">
+      <div class="about-text">
+        <p>Missara Clothing was founded with a simple yet passionate mission: to create luxury, handcrafted ethnic wear for the modern Indian woman, without the exorbitant designer price tag.</p>
+        <p>Operating from our custom tailoring facility in Jabalpur, Madhya Pradesh, we handpick the finest quality cotton, art silks, and lightweight georgettes. Every piece is meticulously detailed, showcasing traditional Indian embroideries, block prints, and custom silhouettes that flatter and empower.</p>
+        
+        <div class="about-quote">
+          "Fashion is not just about looking good; it is about feeling comfortable, graceful, and connected to our roots."
+        </div>
+        
+        <p>By operating as a direct-to-consumer (D2C) brand, we eliminate Middlemen markups. This ensures that the premium, soft cotton suit sets, designer sarees, and lehengas you buy are of authentic boutique quality at honest prices.</p>
+      </div>
+      
+      <div class="about-img-frame">
+        <img src="images/hero_banner_1.png" alt="Missara Tailoring and Fabric Selection">
+      </div>
+    </div>
+
+    <!-- Core Values Section -->
+    <section class="about-values-section">
+      <div class="container">
+        <h2 class="section-title" style="font-size: 1.8rem; margin-bottom: 10px;">Our Core Promises</h2>
+        <p class="section-subtitle" style="margin-bottom: 40px; font-size:0.85rem;">What Drives Us Every Day</p>
+        
+        <div class="value-cards-grid">
+          <div class="value-card">
+            <i class="fas fa-gem"></i>
+            <h3>Uncompromised Quality</h3>
+            <p>We source only 100% premium grade fabrics that are breathable, durable, and colorfast, ensuring long-lasting elegance.</p>
+          </div>
+          <div class="value-card">
+            <i class="fas fa-heart"></i>
+            <h3>Ethical Craftsmanship</h3>
+            <p>Our tailoring staff and artisans in Jabalpur operate in safe, encouraging environments and are paid fair living wages.</p>
+          </div>
+          <div class="value-card">
+            <i class="fas fa-tags"></i>
+            <h3>Honest Pricing</h3>
+            <p>No high boutique markups. Direct manufacturing means you get luxury ethnic wear at fair, affordable prices.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Drawer Backdrop -->
+  <div class="backdrop" id="backdrop"></div>
+
+  <!-- Shopping Cart Drawer -->
+  <div class="drawer" id="cart-drawer">
+    <div class="drawer-header">
+      <h3 class="drawer-title">Shopping Bag</h3>
+      <button class="drawer-close" aria-label="Close Cart"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="cart-drawer-content" id="cart-drawer-items">
+      <!-- App.js renders this -->
+    </div>
+    <div class="cart-drawer-footer" id="cart-drawer-footer">
+      <div class="cart-subtotal-row">
+        <span>Order Subtotal:</span>
+        <span id="cart-drawer-subtotal">₹0</span>
+      </div>
+      <div class="cart-drawer-actions">
+        <a href="cart.html" class="btn btn-secondary">View Shopping Bag</a>
+        <a href="checkout.html" class="btn btn-primary">Proceed to Checkout</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Menu Drawer -->
+  <div class="drawer mobile-nav-drawer" id="mobile-menu">
+    <div class="drawer-header">
+      <h3 class="drawer-title">Menu</h3>
+      <button class="drawer-close" aria-label="Close Menu"><i class="fas fa-times"></i></button>
+    </div>
+    <ul class="mobile-nav-list">
+      <li><a href="index.html" class="mobile-nav-link">Home</a></li>
+      <li><a href="shop.html" class="mobile-nav-link">Shop All</a></li>
+      <li><a href="shop.html?category=Kurtas%20%26%20Suits" class="mobile-nav-link">Kurtas & Suits</a></li>
+      <li><a href="shop.html?category=Sarees" class="mobile-nav-link">Sarees</a></li>
+      <li><a href="shop.html?category=Lehengas" class="mobile-nav-link">Lehengas</a></li>
+      <li><a href="shop.html?category=Fusion%20Wear" class="mobile-nav-link">Fusion Wear</a></li>
+      <li><a href="about.html" class="mobile-nav-link active">Our Brand Story</a></li>
+      <li><a href="contact.html" class="mobile-nav-link">Contact & Store</a></li>
+    </ul>
+  </div>
+
+  <!-- Footer -->
+  <footer class="main-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-info">
+          <div class="footer-logo">MISSARA<span>.</span></div>
+          <p class="footer-desc">Premium Ladies' Ethnic Wear Boutique. Crafting gorgeous, high-quality kurtas, suit sets, sarees, and lehengas tailored to celebrate modern Indian women.</p>
+          <div class="footer-socials">
+            <a href="#" class="social-icon" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" class="social-icon" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+            <a href="#" class="social-icon" aria-label="Pinterest"><i class="fab fa-pinterest-p"></i></a>
+            <a href="#" class="social-icon" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h4 class="footer-title">Shop Collection</h4>
+          <ul class="footer-links">
+            <li><a href="shop.html?category=Kurtas%20%26%20Suits">Kurtas & Suit Sets</a></li>
+            <li><a href="shop.html?category=Sarees">Designer Sarees</a></li>
+            <li><a href="shop.html?category=Lehengas">Wedding Lehengas</a></li>
+            <li><a href="shop.html?category=Fusion%20Wear">Modern Fusion Wear</a></li>
+            <li><a href="shop.html">New Arrivals</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4 class="footer-title">Help & Support</h4>
+          <ul class="footer-links">
+            <li><a href="about.html">About Brand</a></li>
+            <li><a href="contact.html">Contact Us</a></li>
+            <li><a href="refund.html">Shipping & Return Policy</a></li>
+            <li><a href="privacy.html">Privacy Policy</a></li>
+            <li><a href="contact.html">Store Locator</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4 class="footer-title">Contact Us</h4>
+          <p class="footer-desc" style="margin-bottom: 12px; font-size: 0.85rem;">
+            <i class="fas fa-map-marker-alt" style="color: var(--primary-pink); margin-right: 8px;"></i> 1st Floor Agrawal Building, Bilhari Main Road, Jabalpur, MP 482020
+          </p>
+          <p class="footer-desc" style="margin-bottom: 12px; font-size: 0.85rem;">
+            <i class="fas fa-phone-alt" style="color: var(--primary-pink); margin-right: 8px;"></i> +91 9713962329
+          </p>
+          <p class="footer-desc" style="margin-bottom: 20px; font-size: 0.85rem;">
+            <i class="fas fa-envelope" style="color: var(--primary-pink); margin-right: 8px;"></i> sales@missaraclothing.com
+          </p>
+          <h4 class="footer-title" style="margin-bottom: 15px; font-size: 0.95rem; font-weight: 500;">Subscribe For Launch Alerts</h4>
+          <form class="newsletter-form">
+            <input type="email" class="newsletter-input" placeholder="Enter your email" required>
+            <button type="submit" class="newsletter-btn">Join</button>
+          </form>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 Missara Clothing. All Rights Reserved. Tailored in Jabalpur, India.</p>
+        <div class="footer-bottom-links">
+          <a href="privacy.html">Privacy Policy</a>
+          <a href="refund.html">Terms & Conditions</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/products.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

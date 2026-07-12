@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shopping Bag | Missara Clothing</title>
+  <meta name="description" content="View items in your Missara Clothing shopping bag, apply coupons, and checkout securely.">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Global Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+  
+  <style>
+    /* Cart Page Specific Styles */
+    .cart-section {
+      padding: 40px 0;
+    }
+    
+    .breadcrumbs {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 25px;
+      display: flex;
+      gap: 8px;
+    }
+    
+    .breadcrumbs a:hover {
+      color: var(--primary-pink);
+    }
+    
+    .cart-layout {
+      display: grid;
+      grid-template-columns: 1.6fr 0.9fr;
+      gap: 50px;
+      align-items: start;
+    }
+    
+    /* Cart items list */
+    .cart-items-panel {
+      background-color: var(--bg-white);
+    }
+    
+    .cart-table-header {
+      display: grid;
+      grid-template-columns: 3fr 1fr 1fr 1fr;
+      padding: 15px 0;
+      border-bottom: 2px solid var(--border-light);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+    }
+    
+    .cart-item-row {
+      display: grid;
+      grid-template-columns: 3fr 1fr 1fr 1fr;
+      align-items: center;
+      padding: 25px 0;
+      border-bottom: 1px solid var(--border-light);
+    }
+    
+    .cart-product-cell {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+    
+    .cart-product-img {
+      width: 80px;
+      height: 110px;
+      object-fit: cover;
+      border-radius: 4px;
+      background-color: var(--secondary-pink);
+    }
+    
+    .cart-product-info {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .cart-product-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 5px;
+      color: var(--text-dark);
+    }
+    
+    .cart-product-title:hover {
+      color: var(--primary-pink);
+    }
+    
+    .cart-product-meta {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    
+    .cart-qty-selector {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .cart-qty-btn {
+      width: 28px;
+      height: 28px;
+      border: 1px solid var(--border-light);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 0.9rem;
+      background-color: var(--bg-white);
+      transition: all 0.2s ease;
+    }
+    
+    .cart-qty-btn:hover {
+      background-color: var(--secondary-pink);
+      border-color: var(--accent-pink);
+    }
+    
+    .cart-item-subtotal {
+      font-weight: 600;
+      color: var(--text-dark);
+      font-size: 1.05rem;
+    }
+    
+    .cart-action-cell {
+      text-align: right;
+    }
+    
+    .cart-remove-icon-btn {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      padding: 8px;
+    }
+    
+    .cart-remove-icon-btn:hover {
+      color: #E53E3E;
+    }
+    
+    /* Order Summary Sidebar Panel */
+    .cart-summary-panel {
+      background-color: var(--bg-cream);
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      padding: 30px;
+      box-shadow: var(--shadow-sm);
+    }
+    
+    .summary-title {
+      font-family: var(--font-heading);
+      font-size: 1.4rem;
+      margin-bottom: 25px;
+      border-bottom: 1px solid var(--border-light);
+      padding-bottom: 15px;
+    }
+    
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 15px;
+      font-size: 0.95rem;
+      color: var(--text-dark);
+    }
+    
+    .summary-row.total-row {
+      border-top: 1px solid var(--border-light);
+      padding-top: 20px;
+      margin-top: 10px;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--primary-pink);
+    }
+    
+    /* Coupon Section */
+    .coupon-widget {
+      margin-bottom: 25px;
+    }
+    
+    .coupon-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      display: block;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+    
+    .coupon-form {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .coupon-input {
+      flex: 1;
+      padding: 10px 15px;
+      border: 1px solid var(--border-light);
+      border-radius: 4px;
+      font-size: 0.9rem;
+      background-color: var(--bg-white);
+    }
+    
+    .coupon-btn {
+      background-color: var(--text-dark);
+      color: var(--bg-white);
+      padding: 10px 20px;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    
+    .coupon-btn:hover {
+      background-color: var(--primary-pink);
+    }
+    
+    .coupon-applied-msg {
+      font-size: 0.8rem;
+      color: #2F855A;
+      margin-top: 8px;
+      font-weight: 600;
+      display: none;
+    }
+    
+    /* Empty Cart State */
+    .empty-cart-view {
+      text-align: center;
+      padding: 80px 20px;
+      background-color: var(--bg-cream);
+      border-radius: 8px;
+    }
+    
+    .empty-cart-view i {
+      font-size: 4rem;
+      color: var(--accent-pink);
+      margin-bottom: 25px;
+    }
+    
+    .empty-cart-view h2 {
+      font-family: var(--font-heading);
+      font-size: 2rem;
+      margin-bottom: 12px;
+    }
+    
+    .empty-cart-view p {
+      color: var(--text-muted);
+      margin-bottom: 30px;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    /* Responsive Styling overrides */
+    @media (max-width: 900px) {
+      .cart-layout {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
+      .cart-table-header {
+        display: none; /* Hide header details on mobile grids */
+      }
+      .cart-item-row {
+        grid-template-columns: 1fr;
+        gap: 15px;
+        position: relative;
+        padding: 20px 0;
+      }
+      .cart-qty-selector {
+        justify-content: flex-start;
+      }
+      .cart-action-cell {
+        position: absolute;
+        top: 20px;
+        right: 0;
+      }
+      .cart-item-subtotal {
+        font-size: 1.1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Announcement Bar Marquee -->
+  <div class="announcement-bar">
+    <div class="announcement-slider">
+      <span class="announcement-item">🌸 FREE SHIPPING ACROSS INDIA | EASY RETURNS 🌸</span>
+      <span class="announcement-item">✨ EXQUISITE ETHNIC LADIES WEAR REVAMP ✨</span>
+      <span class="announcement-item">💖 USE CODE <b>MISSARA10</b> FOR 10% INSTANT DISCOUNT 💖</span>
+      <span class="announcement-item">🌸 FREE SHIPPING ACROSS INDIA | EASY RETURNS 🌸</span>
+    </div>
+  </div>
+
+  <!-- Header -->
+    <header class="main-header">
+    <div class="header-container">
+      <!-- Left actions (Menu and Search) -->
+      <div class="header-left">
+        <button class="menu-toggle-btn open-menu-btn" aria-label="Open Navigation Menu">
+          <i class="fas fa-bars"></i>
+          <span class="btn-text">MENU</span>
+        </button>
+        <button class="search-toggle-btn" id="search-toggle-btn" aria-label="Toggle Search">
+          <i class="fas fa-search"></i>
+          <span class="btn-text">SEARCH</span>
+        </button>
+      </div>
+      
+      <!-- Logo (Centered) -->
+      <div class="logo">
+        <a href="index.html">
+          <img src="images/logo.png" alt="Missara Logo" class="header-logo-img">
+          MISSARA<span class="logo-dot">.</span>
+        </a>
+      </div>
+      
+      <!-- Right actions -->
+      <div class="header-right">
+        <a href="contact.html" class="contact-link">CONTACT US</a>
+        <a href="admin.html" class="header-icon-btn" aria-label="Boutique Owner Portal">
+          <i class="far fa-user"></i>
+        </a>
+        <a href="shop.html?wishlist=true" class="header-icon-btn" aria-label="Wishlist">
+          <i class="far fa-heart"></i>
+          <span class="icon-badge wishlist-count" style="display: none;">0</span>
+        </a>
+        <a href="#" class="header-icon-btn open-cart-btn" aria-label="Shopping Cart">
+          <i class="fas fa-shopping-bag"></i>
+          <span class="icon-badge cart-count" style="display: none;">0</span>
+        </a>
+      </div>
+    </div>
+    
+    <!-- Search Dropdown Overlay -->
+    <div class="search-overlay" id="search-overlay">
+      <div class="container">
+        <form class="search-container" id="search-form">
+          <input type="text" class="search-input" id="search-input" placeholder="Search for Kurtas, Suits, Sarees, Lehengas..." autocomplete="off">
+          <button type="submit" class="search-submit">Search</button>
+        </form>
+      </div>
+    </div>
+  </header>
+
+  <!-- Cart Page Wrapper -->
+  <main class="container cart-section">
+    <div class="breadcrumbs">
+      <a href="index.html">Home</a>
+      <span>/</span>
+      <span>Shopping Bag</span>
+    </div>
+    
+    <!-- Empty Cart Screen -->
+    <div class="empty-cart-view" id="cart-empty-view" style="display: none;">
+      <i class="fas fa-shopping-bag"></i>
+      <h2>Your Shopping Bag is Empty</h2>
+      <p>Browse our beautiful pastel suit sets, designer sarees, and modern fusion wear to find the perfect outfit for any occasion.</p>
+      <a href="shop.html" class="btn btn-primary" style="display: inline-block; width: auto; padding: 12px 30px;">Shop Collections</a>
+    </div>
+
+    <!-- Filled Cart Layout -->
+    <div class="cart-layout" id="cart-filled-layout" style="display: none;">
+      
+      <!-- Left: Cart items list panel -->
+      <section class="cart-items-panel">
+        <div class="cart-table-header">
+          <span>Product Details</span>
+          <span>Price</span>
+          <span>Quantity</span>
+          <span style="text-align: right; padding-right: 15px;">Subtotal</span>
+        </div>
+        <div id="cart-items-container">
+          <!-- Dynamically Injected Cart Rows -->
+        </div>
+      </section>
+      
+      <!-- Right: Summary details card -->
+      <aside class="cart-summary-panel">
+        <h3 class="summary-title">Order Summary</h3>
+        
+        <!-- Subtotal Rows -->
+        <div class="summary-row">
+          <span>Cart Subtotal</span>
+          <span id="summary-subtotal">₹0</span>
+        </div>
+        <div class="summary-row">
+          <span>Estimated Shipping</span>
+          <span style="color:#2F855A; font-weight:600;">FREE</span>
+        </div>
+        
+        <!-- Dynamic discount line -->
+        <div class="summary-row" id="summary-discount-row" style="display: none;">
+          <span>Coupon Discount</span>
+          <span id="summary-discount-val" style="color:#C53030; font-weight:600;">-₹0</span>
+        </div>
+        
+        <!-- Coupon Form Widget -->
+        <div class="coupon-widget">
+          <label class="coupon-label">Promo / Coupon Code</label>
+          <form class="coupon-form" id="coupon-form">
+            <input type="text" class="coupon-input" id="coupon-input" placeholder="e.g. MISSARA10" autocomplete="off">
+            <button type="submit" class="coupon-btn">Apply</button>
+          </form>
+          <div class="coupon-applied-msg" id="coupon-applied-msg">
+            <i class="fas fa-check-circle"></i> Coupon applied successfully! 10% discount subtracted.
+          </div>
+        </div>
+
+        <!-- Grand Total Row -->
+        <div class="summary-row total-row">
+          <span>Grand Total</span>
+          <span id="summary-grand-total">₹0</span>
+        </div>
+        
+        <a href="checkout.html" class="btn btn-primary btn-gold" style="margin-top: 25px;">Proceed to Secure Checkout</a>
+        <a href="shop.html" class="btn btn-secondary" style="margin-top: 12px;">Continue Shopping</a>
+      </aside>
+      
+    </div>
+  </main>
+
+  <!-- Drawer Backdrop -->
+  <div class="backdrop" id="backdrop"></div>
+
+  <!-- Mobile Menu Drawer -->
+  <div class="drawer mobile-nav-drawer" id="mobile-menu">
+    <div class="drawer-header">
+      <h3 class="drawer-title">Menu</h3>
+      <button class="drawer-close" aria-label="Close Menu"><i class="fas fa-times"></i></button>
+    </div>
+    <ul class="mobile-nav-list">
+      <li><a href="index.html" class="mobile-nav-link">Home</a></li>
+      <li><a href="shop.html" class="mobile-nav-link">Shop All</a></li>
+      <li><a href="shop.html?category=Kurtas%20%26%20Suits" class="mobile-nav-link">Kurtas & Suits</a></li>
+      <li><a href="shop.html?category=Sarees" class="mobile-nav-link">Sarees</a></li>
+      <li><a href="shop.html?category=Lehengas" class="mobile-nav-link">Lehengas</a></li>
+      <li><a href="shop.html?category=Fusion%20Wear" class="mobile-nav-link">Fusion Wear</a></li>
+      <li><a href="about.html" class="mobile-nav-link">Our Brand Story</a></li>
+      <li><a href="contact.html" class="mobile-nav-link">Contact & Store</a></li>
+    </ul>
+  </div>
+
+  <!-- Global JavaScript controllers -->
+  <script src="js/products.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/cart-page.js"></script>
+</body>
+</html>

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login / Sign Up | Missara Clothing</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .auth-container {
+      max-width: 450px;
+      margin: 60px auto;
+      padding: 40px;
+      background: var(--bg-white);
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+      border: 1px solid var(--border-light);
+    }
+    
+    .auth-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .auth-header h2 {
+      font-family: var(--font-heading);
+      color: var(--text-dark);
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+    
+    .auth-tabs {
+      display: flex;
+      border-bottom: 2px solid var(--border-light);
+      margin-bottom: 30px;
+    }
+    
+    .auth-tab {
+      flex: 1;
+      text-align: center;
+      padding: 15px;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--text-light);
+      transition: all 0.3s ease;
+    }
+    
+    .auth-tab.active {
+      color: var(--primary-pink);
+      border-bottom: 2px solid var(--primary-pink);
+      margin-bottom: -2px;
+    }
+    
+    .auth-form {
+      display: none;
+    }
+    
+    .auth-form.active {
+      display: block;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+      color: var(--text-dark);
+      font-weight: 500;
+    }
+    
+    .form-control {
+      width: 100%;
+      padding: 12px 15px;
+      border: 1px solid var(--border-light);
+      border-radius: 6px;
+      font-family: inherit;
+      transition: border-color 0.3s;
+    }
+    
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary-pink);
+    }
+    
+    .btn-auth {
+      width: 100%;
+      padding: 14px;
+      background-color: var(--primary-pink);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      margin-top: 10px;
+    }
+    
+    .btn-auth:hover {
+      background-color: #d12255;
+    }
+    
+    .auth-error {
+      color: #e74c3c;
+      background: #fadbd8;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      margin-bottom: 20px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="top-strip">
+      <div class="scrolling-text">
+        <span>🌸 FREE SHIPPING ACROSS INDIA | EASY RETURNS 🌸</span>
+        <span>✨ EXQUISITE ETHNIC LADIES WEAR REVAMP ✨</span>
+        <span>💖 USE CODE <strong>MISSARA10</strong> FOR 10% INSTANT DISCOUNT 💖</span>
+      </div>
+    </div>
+    
+    <div class="main-header">
+      <div class="header-left">
+        <a href="index.html" class="logo">MISSARA<span class="dot">.</span></a>
+      </div>
+      <div class="header-right">
+        <a href="index.html" class="icon-link"><i class="fas fa-home"></i></a>
+      </div>
+    </div>
+  </header>
+
+  <main style="background-color: var(--secondary-pink); min-height: calc(100vh - 120px); padding: 40px 20px; display: flex; align-items: center;">
+    <div class="auth-container">
+      <div class="auth-header">
+        <h2>Welcome to Missara</h2>
+        <p>Log in to access your orders and saved details.</p>
+      </div>
+      
+      <div class="auth-tabs">
+        <div class="auth-tab active" id="tab-login" onclick="switchTab('login')">Sign In</div>
+        <div class="auth-tab" id="tab-register" onclick="switchTab('register')">Create Account</div>
+      </div>
+      
+      <div id="error-message" class="auth-error"></div>
+      
+      <!-- Login Form -->
+      <form id="login-form" class="auth-form active">
+        <div class="form-group">
+          <label for="login-email">Email Address</label>
+          <input type="email" id="login-email" class="form-control" required placeholder="Enter your email">
+        </div>
+        <div class="form-group">
+          <label for="login-password">Password</label>
+          <input type="password" id="login-password" class="form-control" required placeholder="Enter your password">
+        </div>
+        <div style="text-align: right; margin-bottom: 15px;">
+          <a href="#" onclick="switchTab('forgot'); return false;" style="font-size: 0.85rem; color: var(--primary-pink); text-decoration: none;">Forgot Password?</a>
+        </div>
+        <button type="submit" class="btn-auth">Sign In</button>
+      </form>
+      
+      <!-- Forgot Password Form -->
+      <form id="forgot-form" class="auth-form">
+        <p style="font-size: 0.9rem; color: var(--text-light); margin-bottom: 20px;">Enter your email address and we'll send you a link to reset your password.</p>
+        <div class="form-group">
+          <label for="forgot-email">Email Address</label>
+          <input type="email" id="forgot-email" class="form-control" required placeholder="Enter your email">
+        </div>
+        <button type="submit" class="btn-auth">Send Reset Link</button>
+        <div style="text-align: center; margin-top: 15px;">
+          <a href="#" onclick="switchTab('login'); return false;" style="font-size: 0.85rem; color: var(--text-dark); text-decoration: none;">&larr; Back to Login</a>
+        </div>
+      </form>
+      
+      <!-- Register Form -->
+      <form id="register-form" class="auth-form">
+        <div class="form-group">
+          <label for="reg-name">Full Name</label>
+          <input type="text" id="reg-name" class="form-control" required placeholder="Enter your full name">
+        </div>
+        <div class="form-group">
+          <label for="reg-email">Email Address</label>
+          <input type="email" id="reg-email" class="form-control" required placeholder="Enter your email">
+        </div>
+        <div class="form-group">
+          <label for="reg-phone">Phone Number</label>
+          <input type="tel" id="reg-phone" class="form-control" required placeholder="10-digit mobile number" pattern="[0-9]{10}">
+        </div>
+        <div class="form-group">
+          <label for="reg-password">Password</label>
+          <input type="password" id="reg-password" class="form-control" required placeholder="Create a password" minlength="6">
+        </div>
+        <button type="submit" class="btn-auth">Create Account</button>
+      </form>
+    </div>
+  </main>
+
+  <!-- Global Footer -->
+  <footer class="footer">
+    <div class="footer-bottom">
+      <p>&copy; 2026 Missara Clothing. All Rights Reserved.</p>
+    </div>
+  </footer>
+
+  <script src="js/auth.js"></script>
+</body>
+</html>

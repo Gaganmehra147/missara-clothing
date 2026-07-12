@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard | Missara Clothing</title>
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Global Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+  
+  <style>
+    /* Admin Page Specific Layouts */
+    .admin-section {
+      padding: 40px 0;
+    }
+    
+    .admin-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--border-light);
+      padding-bottom: 20px;
+      margin-bottom: 30px;
+    }
+    
+    .admin-title {
+      font-family: var(--font-heading);
+      font-size: 2.2rem;
+    }
+    
+    .admin-title span {
+      color: var(--primary-pink);
+    }
+    
+    .admin-layout {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 40px;
+      align-items: start;
+    }
+    
+    /* Navigation Sidebar */
+    .admin-sidebar {
+      background-color: var(--bg-cream);
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      padding: 20px;
+    }
+    
+    .admin-menu-btn {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 15px;
+      width: 100%;
+      border-radius: 6px;
+      font-weight: 600;
+      color: var(--text-dark);
+      margin-bottom: 8px;
+      text-align: left;
+      font-size: 0.95rem;
+    }
+    
+    .admin-menu-btn:hover,
+    .admin-menu-btn.active {
+      background-color: var(--primary-pink);
+      color: var(--bg-white);
+    }
+    
+    /* Content panels */
+    .admin-panel {
+      background-color: var(--bg-white);
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      padding: 35px;
+      box-shadow: var(--shadow-sm);
+      display: none;
+    }
+    
+    .admin-panel.active {
+      display: block;
+    }
+    
+    .panel-title {
+      font-family: var(--font-heading);
+      font-size: 1.5rem;
+      margin-bottom: 25px;
+      border-bottom: 1px solid var(--border-light);
+      padding-bottom: 10px;
+    }
+    
+    /* Forms layout */
+    .form-grid-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .form-group.full-width {
+      grid-column: span 2;
+    }
+    
+    .form-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-dark);
+      margin-bottom: 6px;
+    }
+    
+    .admin-input, .admin-textarea, .admin-select {
+      padding: 10px 15px;
+      border: 1px solid var(--border-light);
+      border-radius: 4px;
+      font-size: 0.9rem;
+      color: var(--text-dark);
+      background-color: var(--bg-white);
+    }
+    
+    .admin-textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+    
+    .checkbox-group-flex {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      margin-top: 5px;
+    }
+    
+    .checkbox-label-flex {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+    
+    .checkbox-label-flex input {
+      accent-color: var(--primary-pink);
+      width: 16px;
+      height: 16px;
+    }
+    
+    /* Catalog Table */
+    .catalog-table-wrapper {
+      overflow-x: auto;
+    }
+    
+    .catalog-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    
+    .catalog-table th,
+    .catalog-table td {
+      border-bottom: 1px solid var(--border-light);
+      padding: 12px 15px;
+      text-align: left;
+    }
+    
+    .catalog-table th {
+      font-weight: 600;
+      color: var(--text-muted);
+      background-color: var(--secondary-pink);
+    }
+    
+    .catalog-thumb {
+      width: 45px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 4px;
+      background-color: var(--secondary-pink);
+    }
+    
+    .badge-tag {
+      background-color: var(--gold-accent);
+      color: var(--bg-white);
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 12px;
+    }
+    
+    .btn-delete {
+      color: #E53E3E;
+      font-size: 0.85rem;
+      font-weight: 600;
+      background: none;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .btn-delete:hover {
+      text-decoration: underline;
+    }
+    
+    .btn-edit {
+      color: var(--primary-pink);
+      font-size: 0.85rem;
+      font-weight: 600;
+      background: none;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .btn-edit:hover {
+      text-decoration: underline;
+    }
+    
+    /* Login Lock Screen Overlay */
+    .admin-lock-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: var(--bg-white);
+      z-index: 3000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .lock-card {
+      background-color: var(--bg-cream);
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      padding: 40px;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: var(--shadow-md);
+    }
+    
+    .lock-icon {
+      font-size: 3rem;
+      color: var(--primary-pink);
+      margin-bottom: 20px;
+    }
+    
+    .lock-title {
+      font-family: var(--font-heading);
+      font-size: 1.8rem;
+      margin-bottom: 10px;
+    }
+    
+    .lock-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 25px;
+    }
+    
+    /* Multi-Image Upload Zone */
+    .image-upload-zone {
+      border: 2px dashed var(--border-light);
+      border-radius: 8px;
+      padding: 30px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background-color: var(--bg-cream);
+      position: relative;
+    }
+    
+    .image-upload-zone:hover,
+    .image-upload-zone.drag-over {
+      border-color: var(--primary-pink);
+      background-color: #FFF0F3;
+    }
+    
+    .image-upload-zone .upload-icon {
+      font-size: 2.2rem;
+      color: var(--primary-pink);
+      margin-bottom: 10px;
+    }
+    
+    .image-upload-zone .upload-text {
+      font-size: 0.9rem;
+      color: var(--text-dark);
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    
+    .image-upload-zone .upload-hint {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+    
+    .image-preview-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin-top: 15px;
+    }
+    
+    .image-preview-item {
+      position: relative;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 2px solid var(--border-light);
+      aspect-ratio: 3 / 4;
+      background-color: var(--secondary-pink);
+    }
+    
+    .image-preview-item:first-child {
+      border-color: var(--primary-pink);
+    }
+    
+    .image-preview-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .image-preview-item .preview-remove-btn {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background: rgba(229, 62, 62, 0.9);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      font-size: 0.7rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s ease;
+    }
+    
+    .image-preview-item .preview-remove-btn:hover {
+      transform: scale(1.15);
+    }
+    
+    .image-preview-item .preview-main-badge {
+      position: absolute;
+      bottom: 4px;
+      left: 4px;
+      background: var(--primary-pink);
+      color: #fff;
+      font-size: 0.6rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .image-count-info {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 8px;
+      text-align: right;
+    }
+
+    @media (max-width: 768px) {
+      .admin-layout {
+        grid-template-columns: 1fr;
+        gap: 30px;
+      }
+      .form-grid-row {
+        grid-template-columns: 1fr;
+      }
+      .form-group.full-width {
+        grid-column: span 1;
+      }
+      .image-preview-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Lock screen password validation overlay -->
+  <div class="admin-lock-overlay" id="admin-lock-screen">
+    <div class="lock-card">
+      <i class="fas fa-lock lock-icon"></i>
+      <h2 class="lock-title">Boutique Owner Portal</h2>
+      <p class="lock-desc">Please enter the security access pin to manage Missara Clothing articles catalog.</p>
+      
+      <form id="admin-login-form" style="display:flex; flex-direction:column; gap:15px;">
+        <input type="password" class="admin-input" id="admin-pin-input" placeholder="Enter Access Pin (Hint: admin)" style="text-align:center;" required autofocus autocomplete="off">
+        <button type="submit" class="btn btn-primary">Unlock Portal</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Announcement Bar -->
+  <div class="announcement-bar">
+    <div class="announcement-slider">
+      <span class="announcement-item">⚙️ BOUTIQUE CATALOG OWNER DASHBOARD ⚙️</span>
+      <span class="announcement-item">🌸 WELCOME TO MISSARA CLOTHING BACKEND 🌸</span>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="main-header">
+    <div class="header-container">
+      <div class="logo" style="margin-right:auto;">
+        <a href="index.html">
+          MISSARA<span>.</span>
+        </a>
+      </div>
+      <div style="display: flex; align-items: center; gap: 15px;">
+        <img src="images/logo.png" alt="Missara Logo" class="logo-img" style="height: 40px; width: auto; object-fit: contain;">
+        <a href="index.html" class="btn btn-secondary" style="width:auto; padding: 8px 20px; font-size:0.8rem;"><i class="fas fa-arrow-left"></i> View Live Store</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Admin Page Content -->
+  <main class="container admin-section">
+    <div class="admin-header-row">
+      <h1 class="admin-title">Boutique <span>Owner</span> Dashboard</h1>
+      <button class="btn btn-secondary" id="admin-logout-btn" style="width:auto; padding: 8px 20px; font-size: 0.8rem;"><i class="fas fa-sign-out-alt"></i> Lock Portal</button>
+    </div>
+    
+    <div class="admin-layout">
+      <!-- Sidebar Navigation Menu -->
+      <aside class="admin-sidebar">
+        <button class="admin-menu-btn active" onclick="switchPanel('add-article', this)">
+          <i class="fas fa-plus-circle"></i> Add New Article
+        </button>
+        <button class="admin-menu-btn" onclick="switchPanel('manage-catalog', this)">
+          <i class="fas fa-tasks"></i> Manage Catalog
+        </button>
+        <button class="admin-menu-btn" onclick="switchPanel('crm-orders', this)">
+          <i class="fas fa-users-cog"></i> Customer Orders (CRM)
+        </button>
+        <button class="admin-menu-btn" onclick="switchPanel('email-logs', this)">
+          <i class="fas fa-history"></i> Email Notifications Log
+        </button>
+        <button class="admin-menu-btn" onclick="switchPanel('payment-settings', this)">
+          <i class="fas fa-credit-card"></i> Payment Settings
+        </button>
+      </aside>
+      
+      <!-- Panel 1: Add New Article Form -->
+      <section class="admin-panel active" id="panel-add-article">
+        <h3 class="panel-title">Add New Boutique Article</h3>
+        
+        <form id="admin-add-product-form">
+          <div class="form-grid-row">
+            <div class="form-group">
+              <label class="form-label" for="prod-title">Article Title</label>
+              <input type="text" class="admin-input" id="prod-title" placeholder="e.g. Blush Pink Silk Kurta" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="prod-category">Category</label>
+              <select class="admin-select" id="prod-category" required>
+                <option value="Kurtas & Suits">Suits & Kurtas</option>
+                <option value="Sarees">Designer Sarees</option>
+                <option value="Lehengas">Lehengas</option>
+                <option value="Anarkalis">Anarkalis</option>
+                <option value="Fusion Wear">Fusion Wear</option>
+                <option value="New Arrivals">New Arrivals</option>
+                <option value="Plus Sizes">Plus Sizes (XXL)</option>
+                <option value="Tunics & Tops">Tunics & Tops</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-grid-row">
+            <div class="form-group">
+              <label class="form-label" for="prod-price">Selling Price (₹ INR)</label>
+              <input type="number" class="admin-input" id="prod-price" placeholder="e.g. 1899" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="prod-original-price">Original Price (₹ INR - for discounts)</label>
+              <input type="number" class="admin-input" id="prod-original-price" placeholder="e.g. 3799" required>
+            </div>
+          </div>
+          
+          <!-- Multi-Image Upload Section -->
+          <div class="form-group full-width" style="margin-bottom: 20px;">
+            <label class="form-label">Upload Product Images (Front, Back, Side, Detail)</label>
+            <div class="image-upload-zone" id="image-upload-zone">
+              <input type="file" id="prod-image-files" accept="image/*" multiple style="display:none;">
+              <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+              <div class="upload-text">Click or drag & drop images here</div>
+              <div class="upload-hint">Upload up to 5 images (JPG, PNG, WEBP) • First image = Main Image</div>
+            </div>
+            <div class="image-preview-grid" id="image-preview-grid"></div>
+            <div class="image-count-info" id="image-count-info"></div>
+          </div>
+
+          <div class="form-grid-row">
+            <div class="form-group">
+              <label class="form-label" for="prod-tag">Catalog Badge / Tag</label>
+              <select class="admin-select" id="prod-tag">
+                <option value="">None</option>
+                <option value="Best Seller">Best Seller</option>
+                <option value="Trending">Trending</option>
+                <option value="New Arrival">New Arrival</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-grid-row">
+            <div class="form-group">
+              <label class="form-label" for="prod-inventory">Inventory (Stock Level)</label>
+              <input type="number" class="admin-input" id="prod-inventory" placeholder="e.g. 10" min="0" value="10" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="prod-fabric">Fabric Details</label>
+              <input type="text" class="admin-input" id="prod-fabric" placeholder="e.g. 100% Premium Pure Cotton" required>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 20px;">
+            <label class="form-label">Available Sizes</label>
+            <div class="checkbox-group-flex">
+              <label class="checkbox-label-flex"><input type="checkbox" class="prod-size-check" value="S" checked> S</label>
+              <label class="checkbox-label-flex"><input type="checkbox" class="prod-size-check" value="M" checked> M</label>
+              <label class="checkbox-label-flex"><input type="checkbox" class="prod-size-check" value="L" checked> L</label>
+              <label class="checkbox-label-flex"><input type="checkbox" class="prod-size-check" value="XL" checked> XL</label>
+              <label class="checkbox-label-flex"><input type="checkbox" class="prod-size-check" value="XXL"> XXL</label>
+              <label class="checkbox-label-flex"><input type="checkbox" class="prod-size-check" value="FS"> Free Size (FS)</label>
+            </div>
+          </div>
+
+          <div class="form-group full-width" style="margin-bottom: 20px;">
+            <label class="form-label" for="prod-desc">Article Description</label>
+            <textarea class="admin-textarea" id="prod-desc" placeholder="Details about tailoring work, fit layout, embroidery patterns..." required></textarea>
+          </div>
+
+          <div class="form-grid-row">
+            <div class="form-group">
+              <label class="form-label" for="prod-colors">Colors</label>
+              <input type="text" class="admin-input" id="prod-colors" placeholder="e.g. Red, Blue" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="prod-occasion">Occasion</label>
+              <input type="text" class="admin-input" id="prod-occasion" placeholder="e.g. Festive, Casual" required>
+            </div>
+          </div>
+
+          <div class="form-grid-row">
+            <div class="form-group">
+              <label class="form-label" for="prod-pattern">Pattern and Print</label>
+              <input type="text" class="admin-input" id="prod-pattern" placeholder="e.g. Floral Print" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="prod-style">Style</label>
+              <input type="text" class="admin-input" id="prod-style" placeholder="e.g. A-Line, Straight" required>
+            </div>
+          </div>
+
+          <div class="form-grid-row">
+            <div class="form-group">
+              <label class="form-label" for="prod-sleeve">Sleeve Length</label>
+              <input type="text" class="admin-input" id="prod-sleeve" placeholder="e.g. 3/4 Sleeves" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="prod-length">Outfit Length</label>
+              <input type="text" class="admin-input" id="prod-length" placeholder="e.g. Calf Length or 5.5 Meters" required>
+            </div>
+          </div>
+          
+          <div class="form-grid-row" style="margin-bottom: 30px;">
+            <div class="form-group">
+              <label class="form-label" for="prod-neck">Neckline Style</label>
+              <input type="text" class="admin-input" id="prod-neck" placeholder="e.g. V-Neck (or N/A for Saree)" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="prod-care">Wash & Care Instructions</label>
+              <input type="text" class="admin-input" id="prod-care" placeholder="e.g. Dry Clean Only or Separate Hand Wash" required>
+            </div>
+          </div>
+          
+          <button type="submit" class="btn btn-primary" style="width: auto; padding: 14px 45px;"><i class="fas fa-check-circle" style="margin-right: 8px;"></i> Add Article to Store</button>
+        </form>
+      </section>
+      
+      <!-- Panel 2: Manage Active Catalog -->
+      <section class="admin-panel" id="panel-manage-catalog">
+        <h3 class="panel-title">Active Outfits Catalog</h3>
+        
+        <div class="catalog-table-wrapper">
+          <table class="catalog-table">
+            <thead>
+              <tr>
+                <th>Image</th>
+                <th>Title</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Badge</th>
+                <th>Stock / Status</th>
+                <th style="text-align: right;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="admin-catalog-tbody">
+              <!-- Dynamically populated by admin.js -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Panel 3: CRM Customer Orders -->
+      <section class="admin-panel" id="panel-crm-orders">
+        <h3 class="panel-title">Boutique CRM - Customer Orders</h3>
+        
+        <div class="catalog-table-wrapper">
+          <table class="catalog-table" style="min-width: 800px;">
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Date / Time</th>
+                <th>Customer Contact</th>
+                <th>Items Ordered</th>
+                <th>Grand Total</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="admin-crm-tbody">
+              <!-- Dynamically populated from localStorage by admin.js -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Panel 4: Email Notifications Log -->
+      <section class="admin-panel" id="panel-email-logs">
+        <h3 class="panel-title">Sent Email Notifications Log (Simulated)</h3>
+        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:20px;">Transactional notification alerts dispatched to customers upon checkout, shipment updates, and deliveries.</p>
+        
+        <div class="catalog-table-wrapper">
+          <table class="catalog-table">
+            <thead>
+              <tr>
+                <th>Recipient Email</th>
+                <th>Subject</th>
+                <th>Dispatched Date & Time</th>
+                <th style="text-align: right;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="admin-email-logs-tbody">
+              <!-- Dynamically populated from localStorage -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Panel 5: Payment Settings -->
+      <section class="admin-panel" id="panel-payment-settings">
+        <h3 class="panel-title">Payment Gateway Settings</h3>
+        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:20px;">Configure your Razorpay Payment Gateway API credentials and storefront payment preferences.</p>
+        
+        <form id="admin-payment-settings-form">
+          <div class="form-grid-row">
+            <div class="form-group">
+              <label class="form-label" for="razorpay-mode">Razorpay Gateway Mode</label>
+              <select class="admin-select" id="razorpay-mode">
+                <option value="test">Sandbox / Test Mode</option>
+                <option value="live">Live / Production Mode</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="razorpay-key-id">Razorpay Key ID</label>
+              <input type="text" class="admin-input" id="razorpay-key-id" placeholder="e.g. rzp_test_xxxxxxxxxxxxxx" required>
+              <span style="font-size: 0.72rem; color: var(--text-muted); margin-top: 4px;">Get this from your Razorpay Dashboard -> API Keys. Default test key is used if left unchanged.</span>
+            </div>
+          </div>
+          
+          <div class="form-grid-row">
+            <div class="form-group">
+              <label class="form-label" for="razorpay-key-secret">Razorpay Key Secret (Optional)</label>
+              <input type="password" class="admin-input" id="razorpay-key-secret" placeholder="e.g. ••••••••••••••••••••••••">
+              <span style="font-size: 0.72rem; color: var(--text-muted); margin-top: 4px;">Used for simulation and server-side compliance checks.</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="razorpay-merchant-name">Merchant Name (Display)</label>
+              <input type="text" class="admin-input" id="razorpay-merchant-name" placeholder="Missara Clothing" value="Missara Clothing" required>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 25px;">
+            <label class="form-label">Payment Preferences</label>
+            <div class="checkbox-group-flex">
+              <label class="checkbox-label-flex"><input type="checkbox" id="pref-enable-razorpay" checked> Enable Razorpay Checkout (UPI, Cards, NetBanking)</label>
+              <label class="checkbox-label-flex"><input type="checkbox" id="pref-enable-cod" checked> Enable Cash on Delivery (COD)</label>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width: auto; padding: 14px 45px;"><i class="fas fa-save" style="margin-right: 8px;"></i> Save Payment Settings</button>
+        </form>
+      </section>
+
+
+    </div>
+  </main>
+
+  <!-- NimbusPost Shipping Entry Modal -->
+  <div id="admin-shipping-modal" class="admin-lock-overlay" style="display: none; background-color: rgba(0, 0, 0, 0.5); z-index: 2500;">
+    <div class="lock-card" style="max-width: 520px; background-color: var(--bg-white); text-align: left; position: relative; padding: 30px;">
+      <button id="close-shipping-modal-btn" style="position: absolute; top: 15px; right: 15px; font-size: 1.5rem; color: var(--text-muted);">&times;</button>
+      
+      <!-- NimbusPost Header -->
+      <div style="display:flex; align-items:center; gap:12px; border-bottom: 2px solid var(--primary-pink); padding-bottom: 12px; margin-bottom: 20px;">
+        <div style="width:40px; height:40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius:8px; display:flex; align-items:center; justify-content:center;">
+          <i class="fas fa-paper-plane" style="color:#fff; font-size:1.1rem;"></i>
+        </div>
+        <div>
+          <h3 style="font-family: var(--font-heading); font-size: 1.2rem; margin: 0; color: var(--text-dark);">Ship via NimbusPost</h3>
+          <span style="font-size: 0.72rem; color: var(--text-muted); letter-spacing: 0.5px;">AI-Powered Shipping Aggregator • ₹19/shipment</span>
+        </div>
+      </div>
+      
+      <!-- Auto-detected Zone Info -->
+      <div id="shipping-zone-info" style="background-color:#EBF8FF; border:1px solid #BEE3F8; border-radius:6px; padding:12px; margin-bottom:18px; display:none;">
+        <div style="display:flex; align-items:center; gap:8px; font-size:0.82rem;">
+          <i class="fas fa-map-marker-alt" style="color:#2B6CB0;"></i>
+          <span id="shipping-zone-text" style="color:#2B6CB0; font-weight:600;">Zone B • Jabalpur, MP</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px; font-size:0.82rem; margin-top:6px;">
+          <i class="fas fa-calendar-alt" style="color:#2B6CB0;"></i>
+          <span id="shipping-est-delivery" style="color:#2B6CB0;">Est. Delivery: Mon, 28 Jun 2026</span>
+        </div>
+      </div>
+
+      <!-- AI Courier Suggestion -->
+      <div id="shipping-ai-suggestion" style="background-color:#F0FFF4; border:1px solid #C6F6D5; border-radius:6px; padding:12px; margin-bottom:18px; display:none;">
+        <div style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.5px; color:#38A169; font-weight:700; margin-bottom:5px;">
+          <i class="fas fa-robot"></i> AI Courier Recommendation
+        </div>
+        <div style="font-size:0.85rem; color:var(--text-dark);">
+          <b id="ai-suggested-courier">Delhivery</b> — <span id="ai-suggestion-reason" style="color:var(--text-muted);">Fastest metro delivery</span>
+        </div>
+      </div>
+      
+      <form id="admin-shipping-form" style="display: flex; flex-direction: column; gap: 15px;">
+        <input type="hidden" id="shipping-order-id">
+        
+        <div class="form-group">
+          <label class="form-label" for="shipping-courier">Courier Partner (via NimbusPost)</label>
+          <select class="admin-select" id="shipping-courier" required>
+            <option value="Delhivery" selected>Delhivery — Pan-India, Fast</option>
+            <option value="BlueDart">BlueDart — Premium Express</option>
+            <option value="XpressBees">XpressBees — Budget Friendly</option>
+            <option value="DTDC">DTDC — Reliable Network</option>
+            <option value="Ecom Express">Ecom Express — E-commerce Focused</option>
+            <option value="Shadowfax">Shadowfax — Hyperlocal Same-Day</option>
+            <option value="India Post">India Post — Rural Coverage</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label" for="shipping-awb">AWB Tracking ID (NimbusPost Auto-Generated)</label>
+          <input type="text" class="admin-input" id="shipping-awb" required style="font-family:monospace; font-weight:600; letter-spacing:1px;">
+          <span style="font-size: 0.72rem; color: var(--text-muted); margin-top: 4px;">Format: NP-XXXXXXXXX • Auto-generated via NimbusPost AI</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="shipping-weight">Package Weight (Kg)</label>
+          <input type="number" class="admin-input" id="shipping-weight" value="0.5" min="0.1" step="0.1" required>
+          <span style="font-size: 0.72rem; color: var(--text-muted); margin-top: 4px;">Clothing typically weighs 0.3 - 1.2 Kg depending on fabric</span>
+        </div>
+        
+        <div style="display: flex; gap: 10px; margin-top: 10px;">
+          <button type="submit" class="btn btn-primary" style="flex: 1;"><i class="fas fa-paper-plane" style="margin-right: 5px;"></i> Ship & Notify</button>
+          <button type="button" class="btn btn-secondary" id="print-label-btn" style="flex: 1; width:auto;"><i class="fas fa-print" style="margin-right: 5px;"></i> Print Label</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Email Viewer Modal -->
+  <div id="admin-email-viewer-modal" class="admin-lock-overlay" style="display: none; background-color: rgba(0,0,0,0.5); z-index: 2600;">
+    <div class="lock-card" style="max-width: 650px; background-color: var(--bg-white); text-align: left; position: relative; padding: 30px; height: 85vh; display: flex; flex-direction: column;">
+      <button id="close-email-viewer-modal-btn" style="position: absolute; top: 15px; right: 15px; font-size: 1.5rem; color: var(--text-muted);">&times;</button>
+      <h3 style="font-family: var(--font-heading); font-size: 1.2rem; color: var(--primary-pink); border-bottom: 1px solid var(--border-light); padding-bottom: 10px; margin-bottom: 15px;">
+        <i class="fas fa-envelope-open-text"></i> Email Notification Preview
+      </h3>
+      <div id="admin-email-meta-container" style="margin-bottom: 15px; font-size: 0.85rem; color: var(--text-muted);"></div>
+      <div id="admin-email-body-container" style="flex: 1; overflow-y: auto; border: 1px solid var(--border-light); padding: 15px; border-radius: 4px; background-color: var(--bg-cream);"></div>
+    </div>
+  </div>
+
+  <!-- Core Scripts -->
+  <script src="js/products.js"></script>
+  <script src="js/shipping.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

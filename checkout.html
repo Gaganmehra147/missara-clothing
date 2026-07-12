@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout | Missara Clothing</title>
+  <meta name="description" content="Place your Missara Clothing order securely. Enter shipping address and choose your preferred payment option.">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Global Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+  
+  <style>
+    /* Overlay for Razorpay Mock Modal */
+    .admin-lock-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.6);
+      z-index: 3000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    /* Checkout Page Specific Styles */
+    .checkout-section {
+      padding: 40px 0;
+    }
+    
+    .checkout-form-layout {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      gap: 50px;
+      align-items: start;
+    }
+    
+    /* Inputs sections panels */
+    .checkout-panel-section {
+      background-color: var(--bg-white);
+      margin-bottom: 30px;
+    }
+    
+    .checkout-section-title {
+      font-family: var(--font-heading);
+      font-size: 1.4rem;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border-light);
+      padding-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .checkout-section-title i {
+      color: var(--primary-pink);
+    }
+    
+    /* Grid Inputs */
+    .inputs-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+    
+    .input-wrapper {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 15px;
+    }
+    
+    .input-wrapper.full-width {
+      grid-column: span 2;
+    }
+    
+    .input-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-dark);
+      margin-bottom: 6px;
+    }
+    
+    .checkout-input {
+      padding: 10px 15px;
+      border: 1px solid var(--border-light);
+      border-radius: 4px;
+      font-size: 0.9rem;
+      color: var(--text-dark);
+      background-color: var(--bg-white);
+    }
+    
+    .checkout-select {
+      padding: 10px 15px;
+      border: 1px solid var(--border-light);
+      border-radius: 4px;
+      font-size: 0.9rem;
+      color: var(--text-dark);
+      background-color: var(--bg-white);
+      cursor: pointer;
+    }
+    
+    /* Payment Tab Widget */
+    .pay-tabs-wrapper {
+      border: 1px solid var(--border-light);
+      border-radius: 10px;
+      overflow: hidden;
+      background: var(--bg-white);
+    }
+
+    .pay-tabs-nav {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      background: var(--bg-cream);
+      border-bottom: 2px solid var(--border-light);
+    }
+
+    .pay-tab-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      padding: 14px 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      border: none;
+      background: none;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s ease;
+      font-family: var(--font-body);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .pay-tab-btn i {
+      font-size: 1.3rem;
+    }
+
+    .pay-tab-btn:hover {
+      color: var(--primary-pink);
+      background: var(--secondary-pink);
+    }
+
+    .pay-tab-btn.active {
+      color: var(--primary-pink);
+      border-bottom-color: var(--primary-pink);
+      background: var(--bg-white);
+    }
+
+    .pay-tab-content {
+      display: none;
+      padding: 22px 20px;
+      min-height: 110px;
+      animation: fadeInTab 0.2s ease;
+    }
+
+    .pay-tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeInTab {
+      from { opacity: 0; transform: translateY(4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .pay-method-info {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 12px;
+    }
+
+    .pay-icons-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .pay-icons-row i {
+      font-size: 1.4rem;
+    }
+
+    .pay-badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      background: #E2E8F0;
+      padding: 2px 7px;
+      border-radius: 4px;
+      color: #4A5568;
+    }
+
+    .pay-secure-note {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.75rem;
+      color: #38A169;
+      font-weight: 600;
+      margin-top: 10px;
+    }
+
+    /* Hidden radio inputs for form submission */
+    .payment-inputs-group { display: none; }
+    
+    /* Order Summary panel checkout */
+    .checkout-summary-panel {
+      background-color: var(--secondary-pink);
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      padding: 25px;
+      box-shadow: var(--shadow-sm);
+    }
+    
+    .checkout-summary-title {
+      font-family: var(--font-heading);
+      font-size: 1.3rem;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border-light);
+      padding-bottom: 10px;
+    }
+    
+    .checkout-summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      font-size: 0.9rem;
+    }
+    
+    .checkout-summary-row.total-row {
+      border-top: 1px solid var(--border-light);
+      padding-top: 15px;
+      margin-top: 8px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--primary-pink);
+    }
+    
+    /* Promo Code Tag display */
+    .coupon-tag-badge {
+      background-color: var(--primary-pink);
+      color: var(--bg-white);
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      margin-left: 10px;
+      display: none;
+    }
+    
+    /* Success receipt formatting */
+    .success-container {
+      max-width: 600px;
+      margin: 40px auto;
+      text-align: center;
+      background-color: var(--bg-cream);
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      padding: 40px;
+      box-shadow: var(--shadow-md);
+    }
+    
+    .success-icon {
+      font-size: 4rem;
+      color: #38A169;
+      margin-bottom: 20px;
+    }
+    
+    .receipt-card {
+      background-color: var(--bg-white);
+      border: 1px dashed var(--border-light);
+      border-radius: 6px;
+      padding: 25px;
+      text-align: left;
+      margin: 25px 0 35px;
+    }
+    
+    .receipt-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-size: 0.85rem;
+      border-bottom: 1px solid var(--secondary-pink);
+      padding-bottom: 8px;
+    }
+    
+    .receipt-label {
+      font-weight: 600;
+      color: var(--text-dark);
+    }
+    
+    /* Responsive details */
+    @media (max-width: 900px) {
+      .checkout-form-layout {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
+      .inputs-grid {
+        grid-template-columns: 1fr;
+      }
+      .input-wrapper.full-width {
+        grid-column: span 1;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Announcement Bar Marquee -->
+  <div class="announcement-bar">
+    <div class="announcement-slider">
+      <span class="announcement-item">🌸 FREE SHIPPING ACROSS INDIA | EASY RETURNS 🌸</span>
+      <span class="announcement-item">✨ EXQUISITE ETHNIC LADIES WEAR REVAMP ✨</span>
+      <span class="announcement-item">💖 USE CODE <b>MISSARA10</b> FOR 10% INSTANT DISCOUNT 💖</span>
+      <span class="announcement-item">🌸 FREE SHIPPING ACROSS INDIA | EASY RETURNS 🌸</span>
+    </div>
+  </div>
+
+  <!-- Header -->
+    <header class="main-header">
+    <div class="header-container">
+      <!-- Left actions (Menu and Search) -->
+      <div class="header-left">
+        <button class="menu-toggle-btn open-menu-btn" aria-label="Open Navigation Menu">
+          <i class="fas fa-bars"></i>
+          <span class="btn-text">MENU</span>
+        </button>
+        <button class="search-toggle-btn" id="search-toggle-btn" aria-label="Toggle Search">
+          <i class="fas fa-search"></i>
+          <span class="btn-text">SEARCH</span>
+        </button>
+      </div>
+      
+      <!-- Logo (Centered) -->
+      <div class="logo">
+        <a href="index.html">
+          <img src="images/logo.png" alt="Missara Logo" class="header-logo-img">
+          MISSARA<span class="logo-dot">.</span>
+        </a>
+      </div>
+      
+      <!-- Right actions -->
+      <div class="header-right">
+        <a href="contact.html" class="contact-link">CONTACT US</a>
+        <a href="admin.html" class="header-icon-btn" aria-label="Boutique Owner Portal">
+          <i class="far fa-user"></i>
+        </a>
+        <a href="shop.html?wishlist=true" class="header-icon-btn" aria-label="Wishlist">
+          <i class="far fa-heart"></i>
+          <span class="icon-badge wishlist-count" style="display: none;">0</span>
+        </a>
+        <a href="#" class="header-icon-btn open-cart-btn" aria-label="Shopping Cart">
+          <i class="fas fa-shopping-bag"></i>
+          <span class="icon-badge cart-count" style="display: none;">0</span>
+        </a>
+      </div>
+    </div>
+    
+    <!-- Search Dropdown Overlay -->
+    <div class="search-overlay" id="search-overlay">
+      <div class="container">
+        <form class="search-container" id="search-form">
+          <input type="text" class="search-input" id="search-input" placeholder="Search for Kurtas, Suits, Sarees, Lehengas..." autocomplete="off">
+          <button type="submit" class="search-submit">Search</button>
+        </form>
+      </div>
+    </div>
+  </header>
+
+  <!-- Checkout Container -->
+  <main class="container checkout-section">
+    
+    <!-- 1. ACTIVE CHECKOUT FORM PAGE -->
+    <div class="checkout-form-layout" id="checkout-form-layout">
+      <!-- Left: Form inputs for shipping & payments -->
+      <form id="checkout-details-form">
+        <!-- Contact Information -->
+        <div class="checkout-panel-section">
+          <h3 class="checkout-section-title"><i class="far fa-envelope"></i> Contact Information</h3>
+          <div class="input-wrapper full-width">
+            <label class="input-label" for="checkout-email">Email Address</label>
+            <input type="email" class="checkout-input" id="checkout-email" placeholder="you@example.com" required>
+          </div>
+        </div>
+        
+        <!-- Shipping Address details -->
+        <div class="checkout-panel-section">
+          <h3 class="checkout-section-title"><i class="fas fa-shipping-fast"></i> Shipping Address</h3>
+          <div class="inputs-grid">
+            <div class="input-wrapper">
+              <label class="input-label" for="checkout-firstname">First Name</label>
+              <input type="text" class="checkout-input" id="checkout-firstname" placeholder="Riya" required>
+            </div>
+            <div class="input-wrapper">
+              <label class="input-label" for="checkout-lastname">Last Name</label>
+              <input type="text" class="checkout-input" id="checkout-lastname" placeholder="Sharma" required>
+            </div>
+            <div class="input-wrapper full-width">
+              <label class="input-label" for="checkout-address">Delivery Address (Street details)</label>
+              <input type="text" class="checkout-input" id="checkout-address" placeholder="Flat No. / House, Building Name, Street Road" required>
+            </div>
+            <div class="input-wrapper">
+              <label class="input-label" for="checkout-city">City</label>
+              <input type="text" class="checkout-input" id="checkout-city" placeholder="Jabalpur" required>
+            </div>
+            <div class="input-wrapper">
+              <label class="input-label" for="checkout-state">State</label>
+              <select class="checkout-select" id="checkout-state" required>
+                <option value="" disabled selected>Select State</option>
+                <option value="Madhya Pradesh">Madhya Pradesh</option>
+                <option value="Delhi">Delhi</option>
+                <option value="Maharashtra">Maharashtra</option>
+                <option value="Uttar Pradesh">Uttar Pradesh</option>
+                <option value="Karnataka">Karnataka</option>
+                <option value="Rajasthan">Rajasthan</option>
+                <option value="Gujarat">Gujarat</option>
+              </select>
+            </div>
+            <div class="input-wrapper">
+              <label class="input-label" for="checkout-pincode">Pincode</label>
+              <input type="text" class="checkout-input" id="checkout-pincode" placeholder="482020" pattern="\d{6}" maxlength="6" required>
+              <div id="checkout-pincode-result" style="display:none; margin-top:6px; font-size:0.8rem;"></div>
+            </div>
+            <div class="input-wrapper">
+              <label class="input-label" for="checkout-phone">Mobile Phone (For delivery alerts)</label>
+              <input type="tel" class="checkout-input" id="checkout-phone" placeholder="9713962329" pattern="[6-9]\d{9}" required>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Payment Options section - Tab Based -->
+        <div class="checkout-panel-section" id="checkout-payment-section">
+          <h3 class="checkout-section-title"><i class="far fa-credit-card"></i> Payment Options</h3>
+
+          <!-- Hidden radio inputs for form submission compatibility -->
+          <input type="radio" name="payment-method" value="razorpay" id="radio-razorpay" checked style="display:none">
+          <input type="radio" name="payment-method" value="cod" id="radio-cod" style="display:none">
+          <!-- Hidden containers required by cart-page.js setupPaymentOptionsVisibility -->
+          <div id="option-razorpay-card" style="display:none;"></div>
+          <div id="option-cod-card" style="display:none;"></div>
+          <div class="payment-inputs-group" id="payment-details-razorpay" style="display:none;"></div>
+          <div class="payment-inputs-group" id="payment-details-cod" style="display:none;"></div>
+
+          <div class="pay-tabs-wrapper">
+
+            <!-- Tab Nav -->
+            <div class="pay-tabs-nav">
+              <button type="button" class="pay-tab-btn active" id="ptab-upi" onclick="switchPayTab('upi')">
+                <i class="fas fa-mobile-alt"></i> UPI
+              </button>
+              <button type="button" class="pay-tab-btn" id="ptab-card" onclick="switchPayTab('card')">
+                <i class="far fa-credit-card"></i> Cards
+              </button>
+              <button type="button" class="pay-tab-btn" id="ptab-netbanking" onclick="switchPayTab('netbanking')">
+                <i class="fas fa-university"></i> Netbanking
+              </button>
+              <button type="button" class="pay-tab-btn" id="ptab-cod" onclick="switchPayTab('cod')">
+                <i class="fas fa-hand-holding-usd"></i> COD
+              </button>
+            </div>
+
+            <!-- UPI Tab -->
+            <div class="pay-tab-content active" id="pcontent-upi">
+              <p class="pay-method-info">Pay instantly using <b>UPI</b> — Google Pay, PhonePe, Paytm, or any UPI app. Powered by <b>Razorpay</b>. Secure &amp; instant.</p>
+              <div class="pay-icons-row">
+                <i class="fab fa-google-pay" style="color:#4285F4; font-size:1.8rem;"></i>
+                <span class="pay-badge">PhonePe</span>
+                <span class="pay-badge">Paytm</span>
+                <span class="pay-badge">Any UPI</span>
+              </div>
+              <div class="pay-secure-note"><i class="fas fa-lock"></i> 100% Secure · Instant Confirmation</div>
+            </div>
+
+            <!-- Cards Tab -->
+            <div class="pay-tab-content" id="pcontent-card">
+              <p class="pay-method-info">Pay using your <b>Credit or Debit Card</b>. All major cards accepted. 3D Secure authentication. Powered by <b>Razorpay</b>.</p>
+              <div class="pay-icons-row">
+                <i class="fab fa-cc-visa" style="color:#1A1F71;"></i>
+                <i class="fab fa-cc-mastercard" style="color:#EB001B;"></i>
+                <i class="fab fa-cc-amex" style="color:#007BC1;"></i>
+                <i class="fab fa-cc-rupay" style="color:#2E8B57;"></i>
+                <span class="pay-badge">3D Secure</span>
+              </div>
+              <div class="pay-secure-note"><i class="fas fa-lock"></i> Encrypted &amp; PCI-DSS Compliant</div>
+            </div>
+
+            <!-- Netbanking Tab -->
+            <div class="pay-tab-content" id="pcontent-netbanking">
+              <p class="pay-method-info">Pay directly from your <b>Bank Account</b> using Net Banking. Supports 50+ banks including SBI, HDFC, ICICI, Axis &amp; more. Powered by <b>Razorpay</b>.</p>
+              <div class="pay-icons-row">
+                <i class="fas fa-university" style="color: var(--primary-pink); font-size:1.5rem;"></i>
+                <span class="pay-badge">SBI</span>
+                <span class="pay-badge">HDFC</span>
+                <span class="pay-badge">ICICI</span>
+                <span class="pay-badge">Axis</span>
+                <span class="pay-badge">50+ Banks</span>
+              </div>
+              <div class="pay-secure-note"><i class="fas fa-lock"></i> Bank-level Security</div>
+            </div>
+
+            <!-- COD Tab -->
+            <div class="pay-tab-content" id="pcontent-cod">
+              <p class="pay-method-info">Pay in <b>Cash on Delivery</b>. Please keep exact change ready at the time of delivery. A COD handling fee of <b>₹25</b> will be added.</p>
+              <div class="pay-icons-row">
+                <i class="fas fa-money-bill-wave" style="color:#38A169; font-size:1.5rem;"></i>
+                <span class="pay-badge" style="background:#C6F6D5; color:#276749;">COD Available</span>
+                <span class="pay-badge">+₹25 Handling</span>
+              </div>
+              <div class="pay-secure-note" style="color:#D97706;"><i class="fas fa-info-circle"></i> Pay after delivery — No advance required</div>
+            </div>
+
+          </div><!-- end pay-tabs-wrapper -->
+        </div>
+        
+        <button type="submit" class="btn btn-primary btn-gold" style="font-size: 1rem; padding: 16px;">Place Order Securely</button>
+      </form>
+      
+      <!-- Right: Mini summary listings panel -->
+      <aside class="checkout-summary-panel">
+        <h3 class="checkout-summary-title">Summary list</h3>
+        <div id="checkout-summary-items" style="margin-bottom: 25px;">
+          <!-- Dynamically Injected checkout summaries -->
+        </div>
+        
+        <!-- Pricing Invoices -->
+        <div class="checkout-summary-row">
+          <span>Subtotal</span>
+          <span id="checkout-subtotal">₹0</span>
+        </div>
+        <div class="checkout-summary-row">
+          <span>Shipping Charges</span>
+          <span id="checkout-shipping-charges" style="color:#2F855A; font-weight:600;">—</span>
+        </div>
+        <div class="checkout-summary-row" id="checkout-cod-row" style="display: none;">
+          <span>COD Handling Fee</span>
+          <span id="checkout-cod-charges" style="color:#2F855A; font-weight:600;">₹0</span>
+        </div>
+        
+        <!-- Coupon Row -->
+        <div class="checkout-summary-row" id="checkout-discount-row" style="display: none; align-items:center;">
+          <span>
+            Coupon Discount 
+            <span class="coupon-tag-badge" id="checkout-coupon-tag">Applied</span>
+          </span>
+          <span id="checkout-discount-val" style="color:#C53030; font-weight:600;">-₹0</span>
+        </div>
+        
+        <div class="checkout-summary-row total-row">
+          <span>Grand Total</span>
+          <span id="checkout-grand-total">₹0</span>
+        </div>
+      </aside>
+    </div>
+
+    <!-- 2. INACTIVE SUCCESS RECEIPT SECTION -->
+    <div class="success-container" id="checkout-success-receipt" style="display: none;">
+      <i class="fas fa-check-circle success-icon"></i>
+      <h2 style="font-family: var(--font-heading); font-size: 2.2rem; margin-bottom: 10px;">Order Confirmed!</h2>
+      <p style="color:var(--text-muted); font-size:0.95rem;">Thank you for shopping with Missara. Your order has been placed successfully and is being tailored for delivery.</p>
+      
+      <!-- Receipt Panel Card -->
+      <div class="receipt-card">
+        <h4 style="font-family: var(--font-heading); border-bottom: 1.5px solid var(--primary-pink); padding-bottom: 10px; margin-bottom: 15px; text-transform:uppercase; letter-spacing:0.5px;">Order Receipt</h4>
+        
+        <div class="receipt-row">
+          <span class="receipt-label">Order Number</span>
+          <span id="receipt-order-id" style="font-weight: 700; color: var(--primary-pink);">MS-108264</span>
+        </div>
+        <div class="receipt-row">
+          <span class="receipt-label">Customer Name</span>
+          <span id="receipt-cust-name">Riya Sharma</span>
+        </div>
+        <div class="receipt-row">
+          <span class="receipt-label">Email Address</span>
+          <span id="receipt-cust-email">riya@example.com</span>
+        </div>
+        <div class="receipt-row">
+          <span class="receipt-label">Mobile Phone</span>
+          <span id="receipt-cust-phone">+91 9713962329</span>
+        </div>
+        <div class="receipt-row" style="flex-direction:column; gap:5px; border-bottom:none; padding-bottom:0;">
+          <span class="receipt-label">Shipping Destination</span>
+          <span id="receipt-cust-address" style="line-height: 1.4; margin-top:3px; color:var(--text-muted);">Flat No. 102, Block A, Agrawal Building, Bilhari Main Road, Jabalpur, MP - 482020</span>
+        </div>
+        
+        <h5 style="margin: 20px 0 10px; font-weight: 600; border-bottom: 1px solid var(--border-light); padding-bottom: 5px;">Items Ordered</h5>
+        <div id="receipt-items-summary" style="margin-bottom: 20px;">
+          <!-- Dynamically Injected items list -->
+        </div>
+        
+        <div class="receipt-row" id="receipt-shipping-row" style="display: none;">
+          <span class="receipt-label">Shipping & Handling</span>
+          <span id="receipt-shipping-charge">₹0</span>
+        </div>
+        <div class="receipt-row" id="receipt-cod-row" style="display: none;">
+          <span class="receipt-label">COD Handling Fee</span>
+          <span id="receipt-cod-charge">₹0</span>
+        </div>
+        <div class="receipt-row" style="border-top:1.5px solid var(--border-light); padding-top:12px; margin-bottom:0; font-size:1.05rem;">
+          <span class="receipt-label" style="color: var(--primary-pink);">Amount Paid (<span id="receipt-payment-method">UPI</span>)</span>
+          <span id="receipt-grand-total" style="font-weight: 700; color: var(--primary-pink);">₹1,709</span>
+        </div>
+      </div>
+      
+      <a href="shop.html" class="btn btn-primary" style="display: inline-block; width: auto; padding: 12px 35px;">Continue Shopping</a>
+    </div>
+
+  </main>
+
+  <!-- Drawer Backdrop -->
+  <div class="backdrop" id="backdrop"></div>
+
+  <!-- Mobile Drawer Menu -->
+  <div class="drawer mobile-nav-drawer" id="mobile-menu">
+    <div class="drawer-header">
+      <h3 class="drawer-title">Menu</h3>
+      <button class="drawer-close" aria-label="Close Menu"><i class="fas fa-times"></i></button>
+    </div>
+    <ul class="mobile-nav-list">
+      <li><a href="index.html" class="mobile-nav-link">Home</a></li>
+      <li><a href="shop.html" class="mobile-nav-link">Shop All</a></li>
+      <li><a href="shop.html?category=Kurtas%20%26%20Suits" class="mobile-nav-link">Kurtas & Suits</a></li>
+      <li><a href="shop.html?category=Sarees" class="mobile-nav-link">Sarees</a></li>
+      <li><a href="shop.html?category=Lehengas" class="mobile-nav-link">Lehengas</a></li>
+      <li><a href="shop.html?category=Fusion%20Wear" class="mobile-nav-link">Fusion Wear</a></li>
+      <li><a href="about.html" class="mobile-nav-link">Our Brand Story</a></li>
+      <li><a href="contact.html" class="mobile-nav-link">Contact & Store</a></li>
+    </ul>
+  </div>
+
+  <!-- Razorpay Sandbox dummy secure gateway modal -->
+  <div id="missara-pay-gateway-modal" class="admin-lock-overlay" style="display: none; background-color: rgba(0, 0, 0, 0.6); z-index: 2500;">
+    <div class="lock-card" style="max-width: 440px; background-color: #0b1a30; border-radius: 8px; padding: 0; text-align: left; box-shadow: var(--shadow-lg); font-family: var(--font-body); position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); color: #fff;">
+      
+      <!-- Razorpay Branded Top bar -->
+      <div style="background-color: #0d2347; padding: 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <div>
+          <h4 id="mock-rzp-merchant" style="font-family: var(--font-heading); font-size: 1.25rem; margin: 0; color: #fff; letter-spacing: 0.5px;">Missara Clothing</h4>
+          <span style="font-size: 0.72rem; color: #7ab2ff; font-weight: 600;">Razorpay Secure Checkout (Sandbox)</span>
+        </div>
+        <div style="text-align: right;">
+          <span style="font-size: 0.65rem; color: #a3b8cc; display: block; text-transform: uppercase;">Amount</span>
+          <span id="gateway-total-amt" style="font-weight: 700; color: #fff; font-size: 1.3rem;">₹0</span>
+        </div>
+      </div>
+      
+      <div style="padding: 25px;">
+        <!-- Alert message explaining why mock is showing -->
+        <div style="background: rgba(51, 153, 204, 0.15); border: 1px solid #3399cc; border-radius: 6px; padding: 12px; margin-bottom: 20px; font-size: 0.8rem; line-height: 1.4; color: #e2f1ff;">
+          <i class="fas fa-info-circle" style="color: #3399cc; margin-right: 6px;"></i>
+          Razorpay client SDK is offline or loading in simulator sandbox mode. You can test the payment integration below.
+        </div>
+
+        <!-- Simulated options -->
+        <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 15px; margin-bottom: 20px;">
+          <h5 style="font-size: 0.85rem; font-weight: 600; color: #a3b8cc; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;">Select Payment Method</h5>
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <div style="display:flex; align-items:center; gap:10px; padding:10px; background: rgba(255,255,255,0.03); border-radius: 4px; border: 1px solid rgba(255,255,255,0.05);">
+              <i class="fas fa-qrcode" style="color:#3399cc; font-size:1.1rem;"></i>
+              <span style="font-size: 0.85rem; font-weight:500;">UPI (Google Pay / PhonePe / Paytm)</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px; padding:10px; background: rgba(255,255,255,0.03); border-radius: 4px; border: 1px solid rgba(255,255,255,0.05);">
+              <i class="far fa-credit-card" style="color:#3399cc; font-size:1.1rem;"></i>
+              <span style="font-size: 0.85rem; font-weight:500;">Cards (Visa, Mastercard, RuPay)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Simulator actions -->
+        <div style="background-color: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.15); border-radius: 6px; padding: 15px; margin-bottom: 25px;">
+          <span style="font-size: 0.72rem; font-weight: 700; color: #3399cc; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 12px; text-align: center;">
+            <i class="fas fa-flask"></i> Sandbox Transaction controls
+          </span>
+          <div style="display: flex; gap: 12px;">
+            <button type="button" class="btn btn-primary" id="gateway-btn-success" style="flex:1; padding: 10px; font-size: 0.8rem; background-color:#2f855a; border-color:#2f855a; color:#fff;"><i class="fas fa-check-circle"></i> Success</button>
+            <button type="button" class="btn btn-primary" id="gateway-btn-failure" style="flex:1; padding: 10px; font-size: 0.8rem; background-color:#9b2c2c; border-color:#9b2c2c; color:#fff;"><i class="fas fa-times-circle"></i> Fail</button>
+          </div>
+        </div>
+        
+        <!-- Footer -->
+        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.7rem; color: #a3b8cc; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+          <span><i class="fas fa-lock" style="color:#3399cc;"></i> Razorpay Secured Gateway</span>
+          <button type="button" id="gateway-btn-cancel" style="font-weight: 600; color: #e53e3e; font-size: 0.75rem; cursor:pointer; background:none; border:none; padding:0;">Cancel Payment</button>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script src="js/products.js"></script>
+  <script src="js/shipping.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/cart-page.js"></script>
+
+  <script>
+    // Payment Tab Switcher
+    const PAY_TABS = ['upi', 'card', 'netbanking', 'cod'];
+
+    function switchPayTab(tab) {
+      // Update tab button active states
+      PAY_TABS.forEach(t => {
+        const btn = document.getElementById('ptab-' + t);
+        const content = document.getElementById('pcontent-' + t);
+        if (btn) btn.classList.toggle('active', t === tab);
+        if (content) content.classList.toggle('active', t === tab);
+      });
+
+      // Set the hidden radio input so form submission reads correct value
+      if (tab === 'cod') {
+        document.getElementById('radio-cod').checked = true;
+      } else {
+        // UPI, Cards, Netbanking all go through Razorpay
+        document.getElementById('radio-razorpay').checked = true;
+      }
+
+      // Recalculate totals (adds/removes COD handling fee)
+      if (typeof updateCheckoutTotals === 'function') {
+        updateCheckoutTotals();
+      }
+    }
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shop Collections | Missara Clothing</title>
+  <meta name="description" content="Shop Missara Clothing's premium ladies wear collections. Filter by category, price, and size to find your perfect kurta, suit set, saree, or lehenga.">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Global Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+  
+  <style>
+    /* Shop Page Specific Styles */
+    .shop-section {
+      padding: 40px 0;
+    }
+    
+    .breadcrumbs {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 25px;
+      display: flex;
+      gap: 8px;
+    }
+    
+    .breadcrumbs a:hover {
+      color: var(--primary-pink);
+    }
+    
+    .shop-layout {
+      display: flex;
+      gap: 40px;
+    }
+    
+    /* Filter Sidebar */
+    .shop-sidebar {
+      width: 260px;
+      flex-shrink: 0;
+    }
+    
+    .filter-widget {
+      border-bottom: 1px solid var(--border-light);
+      padding-bottom: 25px;
+      margin-bottom: 25px;
+    }
+    
+    .filter-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 15px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .filter-list li {
+      margin-bottom: 10px;
+    }
+    
+    .filter-checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      color: var(--text-dark);
+    }
+    
+    .filter-checkbox-label input {
+      accent-color: var(--primary-pink);
+      width: 16px;
+      height: 16px;
+    }
+    
+    /* Sizes grid */
+    .sizes-filter-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    
+    .size-filter-btn {
+      font-size: 0.85rem;
+      font-weight: 500;
+      width: 38px;
+      height: 38px;
+      border: 1px solid var(--border-light);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--bg-white);
+      transition: all 0.2s ease;
+    }
+    
+    .size-filter-btn:hover {
+      border-color: var(--primary-pink);
+      color: var(--primary-pink);
+    }
+    
+    .size-filter-btn.active {
+      background-color: var(--primary-pink);
+      color: var(--bg-white);
+      border-color: var(--primary-pink);
+    }
+    
+    /* Color filter swatch */
+    .colors-filter-flex {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    
+    .color-filter-swatch {
+      width: 25px;
+      height: 25px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 1px solid var(--border-light);
+      position: relative;
+    }
+    
+    .color-filter-swatch.active::after {
+      content: '\f00c';
+      font-family: 'Font Awesome 6 Free';
+      font-weight: 900;
+      font-size: 0.65rem;
+      color: var(--bg-white);
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-shadow: 0 0 2px rgba(0,0,0,0.5);
+    }
+    
+    /* Main shop area */
+    .shop-content {
+      flex: 1;
+    }
+    
+    .shop-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      border-bottom: 1px solid var(--border-light);
+      padding-bottom: 15px;
+    }
+    
+    .shop-results-count {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+    }
+    
+    .shop-sort-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .shop-sort-label {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+    
+    .shop-sort-select {
+      padding: 8px 15px;
+      border: 1px solid var(--border-light);
+      border-radius: 4px;
+      background-color: var(--bg-white);
+      font-size: 0.9rem;
+      color: var(--text-dark);
+      cursor: pointer;
+    }
+    
+    /* Active filter badges row */
+    .active-filters-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 25px;
+    }
+    
+    .active-filter-badge {
+      background-color: var(--secondary-pink);
+      color: var(--primary-pink);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .active-filter-badge i {
+      cursor: pointer;
+      font-size: 0.75rem;
+    }
+    
+    .active-filter-badge i:hover {
+      color: var(--primary-pink-hover);
+    }
+    
+    .clear-all-filters-btn {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 5px 10px;
+    }
+    
+    .clear-all-filters-btn:hover {
+      color: var(--primary-pink);
+    }
+    
+    /* Dynamic Accordion Filters styling */
+    .filter-accordion-item {
+      border-bottom: 1px solid var(--border-light);
+      margin-bottom: 15px;
+      padding-bottom: 15px;
+    }
+    
+    .filter-accordion-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.95rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      padding: 5px 0;
+      color: var(--text-dark);
+      user-select: none;
+    }
+    
+    .filter-accordion-header i {
+      font-size: 0.8rem;
+      transition: transform 0.3s ease;
+      color: var(--text-muted);
+    }
+    
+    .filter-accordion-item.active .filter-accordion-header i {
+      transform: rotate(180deg);
+    }
+    
+    .filter-accordion-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease-out, padding 0.3s ease;
+      padding-top: 0;
+      padding-bottom: 0;
+    }
+    
+    .filter-accordion-item.active .filter-accordion-content {
+      max-height: 400px;
+      overflow-y: auto;
+      padding-top: 15px;
+      padding-bottom: 5px;
+    }
+
+    /* Colors filter swatches */
+    .colors-filter-swatches {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    
+    .color-filter-btn {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: 1px solid var(--border-light);
+      cursor: pointer;
+      position: relative;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+    
+    .color-filter-btn:hover {
+      transform: scale(1.15);
+    }
+    
+    .color-filter-btn.active {
+      border-color: var(--text-dark);
+      transform: scale(1.1);
+    }
+    
+    .color-filter-btn.active::after {
+      content: '\f00c';
+      font-family: 'Font Awesome 6 Free';
+      font-weight: 900;
+      font-size: 0.65rem;
+      color: #FFFFFF;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-shadow: 0 0 2px rgba(0,0,0,0.8);
+    }
+
+    /* Checkmark adjustment for white/off-white background */
+    .color-filter-btn[data-color="White"].active::after,
+    .color-filter-btn[data-color="Off-White"].active::after {
+      color: var(--text-dark);
+      text-shadow: none;
+    }
+    
+    /* Mobile Filter Controls Bar */
+    .mobile-filter-bar {
+      display: none;
+      position: sticky;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background-color: var(--bg-white);
+      box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
+      z-index: 50;
+      grid-template-columns: 1fr 1fr;
+      border-top: 1px solid var(--border-light);
+    }
+    
+    .mobile-filter-btn {
+      padding: 15px;
+      text-align: center;
+      font-weight: 600;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      border-right: 1px solid var(--border-light);
+    }
+    
+    /* Empty Listings State */
+    .no-results-box {
+      text-align: center;
+      padding: 60px 20px;
+      background-color: var(--bg-cream);
+      border-radius: 8px;
+    }
+    
+    .no-results-box i {
+      font-size: 3rem;
+      color: var(--accent-pink);
+      margin-bottom: 20px;
+    }
+    
+    .no-results-title {
+      font-family: var(--font-heading);
+      font-size: 1.6rem;
+      margin-bottom: 10px;
+    }
+    
+    .no-results-desc {
+      color: var(--text-muted);
+      margin-bottom: 25px;
+    }
+    
+    /* Responsive styling overrides */
+    @media (max-width: 768px) {
+      .shop-sidebar {
+        display: none; /* Hide default sidebar on mobile */
+      }
+      .mobile-filter-bar {
+        display: grid;
+      }
+      .shop-toolbar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+      }
+      .shop-sort-wrapper {
+        width: 100%;
+        justify-content: space-between;
+      }
+      .shop-layout {
+        gap: 0;
+      }
+    }
+    
+    /* Mobile Drawer Filters */
+    .mobile-filter-drawer {
+      left: -320px;
+      right: auto;
+      max-width: 320px;
+      overflow-y: auto;
+    }
+    
+    .mobile-filter-drawer.open {
+      left: 0;
+    }
+    
+    .mobile-filter-content {
+      padding: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Announcement Bar Marquee -->
+  <div class="announcement-bar">
+    <div class="announcement-slider">
+      <span class="announcement-item">🌸 FREE SHIPPING ACROSS INDIA | EASY RETURNS 🌸</span>
+      <span class="announcement-item">✨ EXQUISITE ETHNIC LADIES WEAR REVAMP ✨</span>
+      <span class="announcement-item">💖 USE CODE <b>MISSARA10</b> FOR 10% INSTANT DISCOUNT 💖</span>
+      <span class="announcement-item">🌸 FREE SHIPPING ACROSS INDIA | EASY RETURNS 🌸</span>
+    </div>
+  </div>
+
+  <!-- Header -->
+    <header class="main-header">
+    <div class="header-container">
+      <!-- Left actions (Menu and Search) -->
+      <div class="header-left">
+        <button class="menu-toggle-btn open-menu-btn" aria-label="Open Navigation Menu">
+          <i class="fas fa-bars"></i>
+          <span class="btn-text">MENU</span>
+        </button>
+        <button class="search-toggle-btn" id="search-toggle-btn" aria-label="Toggle Search">
+          <i class="fas fa-search"></i>
+          <span class="btn-text">SEARCH</span>
+        </button>
+      </div>
+      
+      <!-- Logo (Centered) -->
+      <div class="logo">
+        <a href="index.html">
+          <img src="images/logo.png" alt="Missara Logo" class="header-logo-img">
+          MISSARA<span class="logo-dot">.</span>
+        </a>
+      </div>
+      
+      <!-- Right actions -->
+      <div class="header-right">
+        <a href="contact.html" class="contact-link">CONTACT US</a>
+        <a href="admin.html" class="header-icon-btn" aria-label="Boutique Owner Portal">
+          <i class="far fa-user"></i>
+        </a>
+        <a href="shop.html?wishlist=true" class="header-icon-btn" aria-label="Wishlist">
+          <i class="far fa-heart"></i>
+          <span class="icon-badge wishlist-count" style="display: none;">0</span>
+        </a>
+        <a href="#" class="header-icon-btn open-cart-btn" aria-label="Shopping Cart">
+          <i class="fas fa-shopping-bag"></i>
+          <span class="icon-badge cart-count" style="display: none;">0</span>
+        </a>
+      </div>
+    </div>
+    
+    <!-- Search Dropdown Overlay -->
+    <div class="search-overlay" id="search-overlay">
+      <div class="container">
+        <form class="search-container" id="search-form">
+          <input type="text" class="search-input" id="search-input" placeholder="Search for Kurtas, Suits, Sarees, Lehengas..." autocomplete="off">
+          <button type="submit" class="search-submit">Search</button>
+        </form>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Shop Interface -->
+  <main class="container shop-section">
+    <!-- Breadcrumbs & Section Title -->
+    <div class="breadcrumbs">
+      <a href="index.html">Home</a>
+      <span>/</span>
+      <span id="breadcrumb-active">All Collections</span>
+    </div>
+    
+    <h1 id="shop-page-title" style="margin-bottom: 25px; font-family: var(--font-heading);">Shop All Collections</h1>
+    
+    <!-- Shop by Categories Circular Navigation -->
+    <section class="shop-categories-section" style="margin-bottom: 45px; padding: 25px 0; border-top: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light); background-color: var(--bg-cream); border-radius: 8px;">
+      <h3 style="text-align: center; font-family: var(--font-heading); font-size: 1.8rem; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dark);">Shop By Categories</h3>
+      <div class="categories-flex">
+        <a href="shop.html?category=Kurtas%20%26%20Suits" class="category-circle-item">
+          <div class="category-circle-wrapper">
+            <img src="images/product_kurta.png" alt="Suits & Kurtas">
+          </div>
+          <span class="category-circle-title">Suits & Kurtas</span>
+        </a>
+        <a href="shop.html?category=Sarees" class="category-circle-item">
+          <div class="category-circle-wrapper">
+            <img src="images/product_saree.png" alt="Designer Sarees">
+          </div>
+          <span class="category-circle-title">Designer Sarees</span>
+        </a>
+        <a href="shop.html?category=Lehengas" class="category-circle-item">
+          <div class="category-circle-wrapper">
+            <img src="images/product_lehenga.png" alt="Lehengas">
+          </div>
+          <span class="category-circle-title">Lehengas</span>
+        </a>
+        <a href="shop.html?style=Anarkali" class="category-circle-item">
+          <div class="category-circle-wrapper">
+            <img src="images/hero_banner_1.png" alt="Anarkalis">
+          </div>
+          <span class="category-circle-title">Anarkalis</span>
+        </a>
+        <a href="shop.html?category=Fusion%20Wear" class="category-circle-item">
+          <div class="category-circle-wrapper">
+            <img src="images/product_dress.png" alt="Fusion Wear">
+          </div>
+          <span class="category-circle-title">Fusion Wear</span>
+        </a>
+        <a href="shop.html?tag=New%20Arrival" class="category-circle-item">
+          <div class="category-circle-wrapper">
+            <img src="images/hero_banner_2.png" alt="New Arrivals">
+          </div>
+          <span class="category-circle-title">New Arrivals</span>
+        </a>
+        <a href="shop.html?size=XXL" class="category-circle-item">
+          <div class="category-circle-wrapper">
+            <img src="images/product_kurta.png" alt="Plus Sizes (XXL)">
+          </div>
+          <span class="category-circle-title">Plus Sizes (XXL)</span>
+        </a>
+        <a href="shop.html?style=Tunic" class="category-circle-item">
+          <div class="category-circle-wrapper">
+            <img src="images/product_dress.png" alt="Tunics &amp; Tops">
+          </div>
+          <span class="category-circle-title">Tunics &amp; Tops</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- Shop Layout: Sidebar + Product Grid -->
+    <div class="shop-layout">
+      <!-- Desktop Sidebar Filter Widget -->
+      <aside class="shop-sidebar">
+        <div class="desktop-filter-header" style="display:flex; align-items:center; gap:10px; margin-bottom: 20px; font-weight:600; text-transform:uppercase; font-size:1.1rem; border-bottom: 2px solid var(--border-light); padding-bottom: 12px; font-family: var(--font-body);">
+          <i class="fas fa-sliders-h" style="color: var(--primary-pink);"></i> Filter
+        </div>
+        <div id="desktop-filters-container"></div>
+      </aside>
+
+      <!-- Main Product Listing Content -->
+      <section class="shop-content">
+        <!-- Toolbar (Results count and sort) -->
+        <div class="shop-toolbar">
+          <div class="shop-results-count" id="results-count-text">
+            Showing 0 of 0 products
+          </div>
+          <div class="shop-sort-wrapper">
+            <span class="shop-sort-label">Sort By:</span>
+            <select class="shop-sort-select" id="sort-select">
+              <option value="default">Featured</option>
+              <option value="price-low-high">Price: Low to High</option>
+              <option value="price-high-low">Price: High to Low</option>
+              <option value="rating">Customer Rating</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Active Filter Badge Row -->
+        <div class="active-filters-row" id="active-filters-container">
+          <!-- Populated Dynamically -->
+        </div>
+
+        <!-- Product Grid -->
+        <div class="product-grid" id="shop-product-grid">
+          <!-- Dynamic Products injected here -->
+        </div>
+
+        <!-- Pagination Controls -->
+        <div class="pagination-container" id="pagination-container" style="display:none;">
+          <button class="page-btn" id="prev-page-btn" aria-label="Previous Page">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <div class="page-numbers" id="page-numbers"></div>
+          <button class="page-btn" id="next-page-btn" aria-label="Next Page">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+
+        <!-- Empty list fallback -->
+        <div class="no-results-box" id="no-results-box" style="display: none;">
+          <i class="fas fa-search-minus"></i>
+          <h3 class="no-results-title">No Outfits Found</h3>
+          <p class="no-results-desc">We couldn't find any outfits matching your filters. Try checking different size or price tags.</p>
+          <button class="btn btn-primary" onclick="resetAllFilters()" style="display: inline-block; width: auto; padding: 10px 25px;">Clear All Filters</button>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Mobile sticky action bars -->
+  <div class="mobile-filter-bar">
+    <button class="mobile-filter-btn" id="mobile-filter-trigger">
+      <i class="fas fa-sliders-h"></i> Filter Outfits
+    </button>
+    <div class="mobile-filter-btn" style="border-right:none; padding: 0;">
+      <select class="shop-sort-select" id="mobile-sort-select" style="border:none; width:100%; height:100%; padding:0 20px; font-weight:600; text-align:center;">
+        <option value="default">Sort: Featured</option>
+        <option value="price-low-high">Price: Low-High</option>
+        <option value="price-high-low">Price: High-Low</option>
+        <option value="rating">Rating</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Mobile Filter Slide-out Drawer -->
+  <div class="drawer mobile-filter-drawer" id="mobile-filter-drawer">
+    <div class="drawer-header">
+      <h3 class="drawer-title">Filters</h3>
+      <button class="drawer-close" id="mobile-filter-close"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="mobile-filter-content">
+      <div id="mobile-filter-widgets-container"></div>
+      <button class="btn btn-primary" id="mobile-apply-filters-btn" style="margin-top: 30px;">Apply Filters</button>
+    </div>
+  </div>
+
+  <!-- Drawer Backdrop -->
+  <div class="backdrop" id="backdrop"></div>
+
+  <!-- Shopping Cart Slide-in Drawer -->
+  <div class="drawer" id="cart-drawer">
+    <div class="drawer-header">
+      <h3 class="drawer-title">Shopping Bag</h3>
+      <button class="drawer-close" aria-label="Close Cart"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="cart-drawer-content" id="cart-drawer-items">
+      <!-- App.js renders this -->
+    </div>
+    <div class="cart-drawer-footer" id="cart-drawer-footer">
+      <div class="cart-subtotal-row">
+        <span>Order Subtotal:</span>
+        <span id="cart-drawer-subtotal">₹0</span>
+      </div>
+      <div class="cart-drawer-actions">
+        <a href="cart.html" class="btn btn-secondary">View Shopping Bag</a>
+        <a href="checkout.html" class="btn btn-primary">Proceed to Checkout</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Drawer Menu -->
+  <div class="drawer mobile-nav-drawer" id="mobile-menu">
+    <div class="drawer-header">
+      <h3 class="drawer-title">Menu</h3>
+      <button class="drawer-close" aria-label="Close Menu"><i class="fas fa-times"></i></button>
+    </div>
+    <ul class="mobile-nav-list">
+      <li><a href="index.html" class="mobile-nav-link">Home</a></li>
+      <li><a href="shop.html" class="mobile-nav-link active">Shop All</a></li>
+      <li><a href="shop.html?category=Kurtas%20%26%20Suits" class="mobile-nav-link">Kurtas &amp; Suits</a></li>
+      <li><a href="shop.html?category=Sarees" class="mobile-nav-link">Sarees</a></li>
+      <li><a href="shop.html?category=Lehengas" class="mobile-nav-link">Lehengas</a></li>
+      <li><a href="shop.html?category=Fusion%20Wear" class="mobile-nav-link">Fusion Wear</a></li>
+      <li><a href="about.html" class="mobile-nav-link">Our Brand Story</a></li>
+      <li><a href="contact.html" class="mobile-nav-link">Contact &amp; Store</a></li>
+    </ul>
+  </div>
+
+  <!-- Footer -->
+  <footer class="main-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-info">
+          <div class="footer-logo">MISSARA<span>.</span></div>
+          <p class="footer-desc">Premium Ladies' Ethnic Wear Boutique. Crafting gorgeous, high-quality kurtas, suit sets, sarees, and lehengas tailored to celebrate modern Indian women.</p>
+          <div class="footer-socials">
+            <a href="#" class="social-icon" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" class="social-icon" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+            <a href="#" class="social-icon" aria-label="Pinterest"><i class="fab fa-pinterest-p"></i></a>
+            <a href="#" class="social-icon" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h4 class="footer-title">Shop Collection</h4>
+          <ul class="footer-links">
+            <li><a href="shop.html?category=Kurtas%20%26%20Suits">Kurtas & Suit Sets</a></li>
+            <li><a href="shop.html?category=Sarees">Designer Sarees</a></li>
+            <li><a href="shop.html?category=Lehengas">Wedding Lehengas</a></li>
+            <li><a href="shop.html?category=Fusion%20Wear">Modern Fusion Wear</a></li>
+            <li><a href="shop.html">New Arrivals</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4 class="footer-title">Help & Support</h4>
+          <ul class="footer-links">
+            <li><a href="about.html">About Brand</a></li>
+            <li><a href="contact.html">Contact Us</a></li>
+            <li><a href="refund.html">Shipping & Return Policy</a></li>
+            <li><a href="privacy.html">Privacy Policy</a></li>
+            <li><a href="contact.html">Store Locator</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4 class="footer-title">Contact Us</h4>
+          <p class="footer-desc" style="margin-bottom: 12px; font-size: 0.85rem;">
+            <i class="fas fa-map-marker-alt" style="color: var(--primary-pink); margin-right: 8px;"></i> 1st Floor Agrawal Building, Bilhari Main Road, Jabalpur, MP 482020
+          </p>
+          <p class="footer-desc" style="margin-bottom: 12px; font-size: 0.85rem;">
+            <i class="fas fa-phone-alt" style="color: var(--primary-pink); margin-right: 8px;"></i> +91 9713962329
+          </p>
+          <p class="footer-desc" style="margin-bottom: 20px; font-size: 0.85rem;">
+            <i class="fas fa-envelope" style="color: var(--primary-pink); margin-right: 8px;"></i> sales@missaraclothing.com
+          </p>
+          <h4 class="footer-title" style="margin-bottom: 15px; font-size: 0.95rem; font-weight: 500;">Subscribe For Launch Alerts</h4>
+          <form class="newsletter-form">
+            <input type="email" class="newsletter-input" placeholder="Enter your email" required>
+            <button type="submit" class="newsletter-btn">Join</button>
+          </form>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 Missara Clothing. All Rights Reserved. Tailored in Jabalpur, India.</p>
+        <div class="footer-bottom-links">
+          <a href="privacy.html">Privacy Policy</a>
+          <a href="refund.html">Terms & Conditions</a>
+        </div>
+      </div>
+  <!-- Footer -->
+  <footer class="main-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-info">
+          <div class="footer-logo">MISSARA<span>.</span></div>
+          <p class="footer-desc">Premium Ladies' Ethnic Wear Boutique. Crafting gorgeous, high-quality kurtas, suit sets, sarees, and lehengas tailored to celebrate modern Indian women.</p>
+          <div class="footer-socials">
+            <a href="#" class="social-icon" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" class="social-icon" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+            <a href="#" class="social-icon" aria-label="Pinterest"><i class="fab fa-pinterest-p"></i></a>
+            <a href="#" class="social-icon" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h4 class="footer-title">Shop Collection</h4>
+          <ul class="footer-links">
+            <li><a href="shop.html?category=Kurtas%20%26%20Suits">Kurtas & Suit Sets</a></li>
+            <li><a href="shop.html?category=Sarees">Designer Sarees</a></li>
+            <li><a href="shop.html?category=Lehengas">Wedding Lehengas</a></li>
+            <li><a href="shop.html?category=Fusion%20Wear">Modern Fusion Wear</a></li>
+            <li><a href="shop.html">New Arrivals</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4 class="footer-title">Help & Support</h4>
+          <ul class="footer-links">
+            <li><a href="about.html">About Brand</a></li>
+            <li><a href="contact.html">Contact Us</a></li>
+            <li><a href="refund.html">Shipping & Return Policy</a></li>
+            <li><a href="privacy.html">Privacy Policy</a></li>
+            <li><a href="contact.html">Store Locator</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4 class="footer-title">Contact Us</h4>
+          <p class="footer-desc" style="margin-bottom: 12px; font-size: 0.85rem;">
+            <i class="fas fa-map-marker-alt" style="color: var(--primary-pink); margin-right: 8px;"></i> 1st Floor Agrawal Building, Bilhari Main Road, Jabalpur, MP 482020
+          </p>
+          <p class="footer-desc" style="margin-bottom: 12px; font-size: 0.85rem;">
+            <i class="fas fa-phone-alt" style="color: var(--primary-pink); margin-right: 8px;"></i> +91 9713962329
+          </p>
+          <p class="footer-desc" style="margin-bottom: 20px; font-size: 0.85rem;">
+            <i class="fas fa-envelope" style="color: var(--primary-pink); margin-right: 8px;"></i> sales@missaraclothing.com
+          </p>
+          <h4 class="footer-title" style="margin-bottom: 15px; font-size: 0.95rem; font-weight: 500;">Subscribe For Launch Alerts</h4>
+          <form class="newsletter-form">
+            <input type="email" class="newsletter-input" placeholder="Enter your email" required>
+            <button type="submit" class="newsletter-btn">Join</button>
+          </form>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 Missara Clothing. All Rights Reserved. Tailored in Jabalpur, India.</p>
+        <div class="footer-bottom-links">
+          <a href="privacy.html">Privacy Policy</a>
+          <a href="refund.html">Terms & Conditions</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/products.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/assistant.js?v=3"></script>
+  <script src="js/shop.js"></script>
+</body>
+</html>

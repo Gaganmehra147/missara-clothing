@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Details | Missara Clothing</title>
+  <meta name="description" content="View product details, sizes, fabric care, reviews, and delivery estimates for Missara Clothing ladies wear.">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Global Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+  
+  <style>
+    /* Product Detail Page Specific Styles */
+    .detail-section {
+      padding: 40px 0;
+    }
+    
+    .breadcrumbs {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 25px;
+      display: flex;
+      gap: 8px;
+    }
+    
+    .breadcrumbs a:hover {
+      color: var(--primary-pink);
+    }
+    
+    .product-detail-layout {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 50px;
+      margin-bottom: 60px;
+    }
+    
+    /* Left Column: Image Galleries */
+    .gallery-container {
+      display: flex;
+      gap: 15px;
+    }
+    
+    .thumbnail-column {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 80px;
+      flex-shrink: 0;
+    }
+    
+    .thumbnail-img {
+      width: 100%;
+      height: 100px;
+      object-fit: cover;
+      border: 1px solid var(--border-light);
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      opacity: 0.7;
+    }
+    
+    .thumbnail-img:hover,
+    .thumbnail-img.active {
+      opacity: 1;
+      border-color: var(--primary-pink);
+    }
+    
+    .main-image-wrapper {
+      flex: 1;
+      height: 600px;
+      border-radius: 8px;
+      overflow: hidden;
+      background-color: var(--secondary-pink);
+      position: relative;
+    }
+    
+    .main-image-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+    
+    .main-image-wrapper:hover img {
+      transform: scale(1.03);
+    }
+    
+    /* Right Column: Info & Buy Actions */
+    .product-info-col {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .detail-category {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--primary-pink);
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+    
+    .detail-title {
+      font-family: var(--font-heading);
+      font-size: 2.2rem;
+      margin-bottom: 15px;
+      line-height: 1.2;
+    }
+    
+    .detail-reviews {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.9rem;
+      margin-bottom: 25px;
+    }
+    
+    .detail-stars {
+      color: #ECC94B;
+    }
+    
+    .detail-reviews-count {
+      color: var(--text-muted);
+    }
+    
+    .detail-price-row {
+      display: flex;
+      align-items: baseline;
+      gap: 15px;
+      border-bottom: 1px solid var(--border-light);
+      padding-bottom: 20px;
+      margin-bottom: 25px;
+    }
+    
+    .detail-price-current {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--primary-pink);
+    }
+    
+    .detail-price-original {
+      font-size: 1.3rem;
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+    
+    .detail-price-discount {
+      font-size: 1.1rem;
+      color: #38A169;
+      font-weight: 600;
+    }
+    
+    .detail-option-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 10px;
+      color: var(--text-dark);
+      display: flex;
+      justify-content: space-between;
+    }
+    
+    .size-guide-link {
+      color: var(--primary-pink);
+      text-transform: none;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    
+    .size-guide-link:hover {
+      text-decoration: underline;
+    }
+    
+    .sizes-flex {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 25px;
+    }
+    
+    .size-btn {
+      width: 48px;
+      height: 48px;
+      border: 1px solid var(--border-light);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 0.9rem;
+      background-color: var(--bg-white);
+      transition: all 0.2s ease;
+    }
+    
+    .size-btn:hover {
+      border-color: var(--primary-pink);
+      color: var(--primary-pink);
+    }
+    
+    .size-btn.active {
+      background-color: var(--primary-pink);
+      color: var(--bg-white);
+      border-color: var(--primary-pink);
+    }
+    
+    .colors-flex {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 30px;
+    }
+    
+    .color-swatch {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 1px solid var(--border-light);
+      transition: transform 0.2s ease;
+    }
+    
+    .color-swatch:hover,
+    .color-swatch.active {
+      transform: scale(1.1);
+      border-color: var(--primary-pink);
+      box-shadow: 0 0 5px rgba(209, 65, 117, 0.3);
+    }
+    
+    /* Action buttons grouping */
+    .actions-row {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 35px;
+    }
+    
+    .actions-row .btn {
+      flex: 1;
+      padding: 16px;
+      font-size: 1rem;
+    }
+    
+    /* Pincode Estimator Widget */
+    .pincode-widget {
+      background-color: var(--secondary-pink);
+      border: 1px solid var(--border-light);
+      border-radius: 6px;
+      padding: 20px;
+      margin-bottom: 35px;
+    }
+    
+    .pincode-widget-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .pincode-widget-title i {
+      color: var(--primary-pink);
+    }
+    
+    .pincode-form {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    
+    .pincode-input {
+      flex: 1;
+      padding: 10px 15px;
+      border: 1px solid var(--border-light);
+      border-radius: 4px;
+      font-size: 0.9rem;
+      color: var(--text-dark);
+      background-color: var(--bg-white);
+    }
+    
+    .pincode-submit {
+      background-color: var(--text-dark);
+      color: var(--bg-white);
+      padding: 10px 20px;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    
+    .pincode-submit:hover {
+      background-color: var(--primary-pink);
+    }
+    
+    .pincode-response {
+      font-size: 0.85rem;
+      margin-top: 5px;
+      display: none;
+    }
+    
+    .pincode-response.success {
+      color: #2F855A;
+    }
+    
+    .pincode-response.error {
+      color: #C53030;
+    }
+    
+    /* Info Accordions */
+    .accordion-item {
+      border-top: 1px solid var(--border-light);
+    }
+    
+    .accordion-item:last-child {
+      border-bottom: 1px solid var(--border-light);
+    }
+    
+    .accordion-header {
+      padding: 15px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--text-dark);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .accordion-header:hover {
+      color: var(--primary-pink);
+    }
+    
+    .accordion-icon {
+      transition: transform 0.3s ease;
+    }
+    
+    .accordion-content {
+      padding: 0 0 20px;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      display: none;
+      line-height: 1.7;
+    }
+    
+    .accordion-item.active .accordion-icon {
+      transform: rotate(180deg);
+    }
+    
+    .accordion-item.active .accordion-content {
+      display: block;
+    }
+    
+    /* Related Products Section */
+    .related-section {
+      border-top: 1px solid var(--border-light);
+      padding-top: 60px;
+    }
+    
+    /* Size Chart Modal */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+    }
+    
+    .modal-content {
+      background-color: var(--bg-white);
+      border-radius: 8px;
+      width: 90%;
+      max-width: 500px;
+      padding: 30px;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+    }
+    
+    .modal-close {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-size: 1.3rem;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+    
+    .modal-close:hover {
+      color: var(--primary-pink);
+    }
+    
+    .modal-title {
+      font-family: var(--font-heading);
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    
+    .size-chart-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 0.9rem;
+    }
+    
+    .size-chart-table th,
+    .size-chart-table td {
+      border: 1px solid var(--border-light);
+      padding: 10px;
+      text-align: center;
+    }
+    
+    .size-chart-table th {
+      background-color: var(--secondary-pink);
+      color: var(--primary-pink);
+      font-weight: 600;
+    }
+    
+    /* Error State */
+    .error-detail-box {
+      text-align: center;
+      padding: 100px 20px;
+      background-color: var(--bg-cream);
+      border-radius: 8px;
+      margin: 40px 0;
+    }
+    
+    .error-detail-box i {
+      font-size: 4rem;
+      color: var(--primary-pink);
+      margin-bottom: 20px;
+    }
+    
+    /* Responsive details */
+    @media (max-width: 900px) {
+      .product-detail-layout {
+        grid-template-columns: 1fr;
+        gap: 30px;
+      }
+      .main-image-wrapper {
+        height: 500px;
+      }
+    }
+    
+    @media (max-width: 600px) {
+      .gallery-container {
+        flex-direction: column-reverse;
+      }
+      .thumbnail-column {
+        flex-direction: row;
+        width: 100%;
+        overflow-x: auto;
+      }
+      .thumbnail-img {
+        width: 70px;
+        height: 70px;
+      }
+      .main-image-wrapper {
+        height: 380px;
+      }
+      .actions-row {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Announcement Bar Marquee -->
+  <div class="announcement-bar">
+    <div class="announcement-slider">
+      <span class="announcement-item">🌸 FREE SHIPPING ACROSS INDIA | EASY RETURNS 🌸</span>
+      <span class="announcement-item">✨ EXQUISITE ETHNIC LADIES WEAR REVAMP ✨</span>
+      <span class="announcement-item">💖 USE CODE <b>MISSARA10</b> FOR 10% INSTANT DISCOUNT 💖</span>
+      <span class="announcement-item">🌸 FREE SHIPPING ACROSS INDIA | EASY RETURNS 🌸</span>
+    </div>
+  </div>
+
+  <!-- Header -->
+    <header class="main-header">
+    <div class="header-container">
+      <!-- Left actions (Menu and Search) -->
+      <div class="header-left">
+        <button class="menu-toggle-btn open-menu-btn" aria-label="Open Navigation Menu">
+          <i class="fas fa-bars"></i>
+          <span class="btn-text">MENU</span>
+        </button>
+        <button class="search-toggle-btn" id="search-toggle-btn" aria-label="Toggle Search">
+          <i class="fas fa-search"></i>
+          <span class="btn-text">SEARCH</span>
+        </button>
+      </div>
+      
+      <!-- Logo (Centered) -->
+      <div class="logo">
+        <a href="index.html">
+          <img src="images/logo.png" alt="Missara Logo" class="header-logo-img">
+          MISSARA<span class="logo-dot">.</span>
+        </a>
+      </div>
+      
+      <!-- Right actions -->
+      <div class="header-right">
+        <a href="contact.html" class="contact-link">CONTACT US</a>
+        <a href="admin.html" class="header-icon-btn" aria-label="Boutique Owner Portal">
+          <i class="far fa-user"></i>
+        </a>
+        <a href="shop.html?wishlist=true" class="header-icon-btn" aria-label="Wishlist">
+          <i class="far fa-heart"></i>
+          <span class="icon-badge wishlist-count" style="display: none;">0</span>
+        </a>
+        <a href="#" class="header-icon-btn open-cart-btn" aria-label="Shopping Cart">
+          <i class="fas fa-shopping-bag"></i>
+          <span class="icon-badge cart-count" style="display: none;">0</span>
+        </a>
+      </div>
+    </div>
+    
+    <!-- Search Dropdown Overlay -->
+    <div class="search-overlay" id="search-overlay">
+      <div class="container">
+        <form class="search-container" id="search-form">
+          <input type="text" class="search-input" id="search-input" placeholder="Search for Kurtas, Suits, Sarees, Lehengas..." autocomplete="off">
+          <button type="submit" class="search-submit">Search</button>
+        </form>
+      </div>
+    </div>
+  </header>
+
+  <!-- Product Detail Content Wrapper -->
+  <main class="container detail-section">
+    <!-- Success Product Detail Layout -->
+    <div id="product-detail-layout" class="product-detail-layout" style="display: none;">
+      
+      <!-- Left Column: Gallery -->
+      <div class="gallery-container">
+        <div class="thumbnail-column" id="gallery-thumbnails">
+          <!-- Populated Dynamically -->
+        </div>
+        <div class="main-image-wrapper">
+          <img id="gallery-main-image" src="" alt="Product Main Image">
+        </div>
+      </div>
+      
+      <!-- Right Column: Product Specs -->
+      <div class="product-info-col">
+        <span class="detail-category" id="detail-category">Kurtas & Suits</span>
+        <h1 class="detail-title" id="detail-title">Pastel Pink Anarkali Suit Set</h1>
+        
+        <div class="detail-reviews">
+          <div class="detail-stars" id="detail-stars-container">
+            <!-- Stars rendered dynamically -->
+          </div>
+          <span class="detail-reviews-count" id="detail-reviews-text">(142 Customer Reviews)</span>
+        </div>
+        
+        <div class="detail-price-row">
+          <span class="detail-price-current" id="detail-price-current">₹1,899</span>
+          <span class="detail-price-original" id="detail-price-original">₹3,799</span>
+          <span class="detail-price-discount" id="detail-price-discount">50% OFF</span>
+        </div>
+        
+        <!-- Options: Size -->
+        <div class="detail-option-label">
+          <span>Select Size</span>
+          <span class="size-guide-link" id="size-guide-trigger">Size Chart</span>
+        </div>
+        <div class="sizes-flex" id="detail-sizes-container">
+          <!-- Rendered Dynamically -->
+        </div>
+        
+        <!-- Options: Colors -->
+        <div class="detail-option-label">Available Colors</div>
+        <div class="colors-flex" id="detail-colors-container">
+          <!-- Rendered Dynamically -->
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="actions-row">
+          <button class="btn btn-secondary" id="add-to-cart-btn"><i class="fas fa-shopping-bag" style="margin-right: 8px;"></i> Add to Bag</button>
+          <button class="btn btn-primary" id="buy-now-btn">Buy It Now</button>
+        </div>
+        
+        <!-- Delivery Pincode Checker -->
+        <div class="pincode-widget">
+          <h4 class="pincode-widget-title">
+            <i class="fas fa-truck"></i> Delivery Options & Estimates
+          </h4>
+          <form class="pincode-form" id="pincode-form">
+            <input type="text" class="pincode-input" id="pincode-input" placeholder="Enter 6-digit Pincode (e.g. 482020)" pattern="\d{6}" maxlength="6" required>
+            <button type="submit" class="pincode-submit">Check</button>
+          </form>
+          <div class="pincode-response" id="pincode-response">
+            <!-- Response text injected here -->
+          </div>
+        </div>
+        
+        <!-- Accordion Information Boxes -->
+        <div class="info-accordions">
+          <!-- Accordion 1 -->
+          <div class="accordion-item active">
+            <div class="accordion-header" onclick="toggleAccordion(this)">
+              Product Description <i class="fas fa-chevron-down accordion-icon"></i>
+            </div>
+            <div class="accordion-content" id="detail-desc">
+              An elegant pastel pink cotton Anarkali suit set, featuring exquisite white embroidery.
+            </div>
+          </div>
+          <!-- Accordion 2 -->
+          <div class="accordion-item">
+            <div class="accordion-header" onclick="toggleAccordion(this)">
+              Fabric & Specifications <i class="fas fa-chevron-down accordion-icon"></i>
+            </div>
+            <div class="accordion-content" id="detail-specifications">
+              Fabric details will be listed here.
+            </div>
+          </div>
+
+          <!-- Accordion 3 -->
+          <div class="accordion-item">
+            <div class="accordion-header" onclick="toggleAccordion(this)">
+              Shipping & Return Policy <i class="fas fa-chevron-down accordion-icon"></i>
+            </div>
+            <div class="accordion-content">
+              We offer free express delivery all over India for prepaid orders. Cash on Delivery (COD) is available. Return and exchanges are accepted within 7 days of package delivery, provided items are unworn and tags remain intact.
+            </div>
+          </div>
+        </div>
+        
+      </div>
+    </div>
+    
+    <!-- Fallback / Error Box -->
+    <div id="product-error-box" class="error-detail-box" style="display: none;">
+      <i class="fas fa-exclamation-triangle"></i>
+      <h2>Oops! Outfit Not Found</h2>
+      <p style="color:var(--text-muted); margin: 15px 0 30px;">The product details you are trying to view do not exist or may have been sold out.</p>
+      <a href="shop.html" class="btn btn-primary" style="display: inline-block; width: auto; padding: 10px 25px;">Back to Catalog</a>
+    </div>
+
+    <!-- Customer Reviews & Ratings Section -->
+    <section class="reviews-section" id="reviews-section" style="margin-top: 50px;">
+      <div class="reviews-header" style="text-align: center; margin-bottom: 30px;">
+        <h2 class="section-title" style="margin-bottom: 5px;">Customer Reviews</h2>
+        <p class="section-subtitle" id="reviews-subtitle">What our shoppers say about this outfit</p>
+      </div>
+
+      <!-- Rating Summary -->
+      <div class="reviews-summary-grid" style="display: grid; grid-template-columns: 1fr 2fr; gap: 30px; margin-bottom: 40px; background: #fff; padding: 25px; border-radius: 8px; border: 1px solid var(--border-light);">
+        <div class="rating-big-box" style="text-align: center; border-right: 1px solid var(--border-light); padding-right: 30px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+          <div class="rating-avg-number" id="avg-rating-display" style="font-size: 3.5rem; font-weight: 700; color: var(--text-dark); line-height: 1;">0.0</div>
+          <div class="rating-avg-stars" id="avg-stars-display" style="color: #FFB800; font-size: 1.3rem; margin: 10px 0 5px;"></div>
+          <div class="rating-avg-count" id="avg-count-display" style="font-size: 0.9rem; color: var(--text-muted);">Based on 0 reviews</div>
+        </div>
+        <div class="rating-distribution" id="rating-distribution" style="display: flex; flex-direction: column; gap: 10px; justify-content: center;">
+          <!-- Distribution bars rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- Reviews List -->
+      <div id="reviews-loader" class="reviews-loader" style="text-align:center; padding: 20px; color: var(--text-muted);">
+        <i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i>
+        <span>Loading reviews...</span>
+      </div>
+      <div id="reviews-list" style="display: flex; flex-direction: column; gap: 20px;"></div>
+      <div id="no-reviews" style="display:none; text-align:center; padding: 40px; color: var(--text-light); border: 1px dashed var(--border-light); border-radius: 8px; margin-bottom: 30px;">
+        <i class="fas fa-star" style="font-size: 2.5rem; color: var(--border-light); display:block; margin-bottom:12px;"></i>
+        <p style="color: var(--text-muted);">No reviews yet. Be the first to share your experience!</p>
+      </div>
+
+      <!-- Write a Review -->
+      <div class="write-review-box" id="write-review-box" style="margin-top: 40px; padding: 30px; background: #FFF5F7; border-radius: 12px; border: 1px solid #FFE3E8;">
+        <h3 class="write-review-title" style="margin-bottom: 20px; font-family: var(--font-display); font-size: 1.4rem;">Write a Review</h3>
+        <!-- Login prompt for guests -->
+        <div id="review-login-prompt" style="display:none; text-align:center; padding: 20px; background: #fff; border-radius: 8px; border: 1px solid var(--border-light);">
+          <i class="fas fa-lock" style="font-size:1.5rem; color: var(--text-light); margin-bottom:8px; display:block;"></i>
+          <p style="margin-bottom: 15px; color: var(--text-dark);">Please log in to leave a review.</p>
+          <a href="login.html" class="btn btn-primary" style="display:inline-block; width:auto; padding: 10px 25px;">Login to Review</a>
+        </div>
+        <!-- Review form for logged-in users -->
+        <form id="review-form" style="display:none;">
+          <div class="review-form-row" style="margin-bottom: 15px;">
+            <label class="review-form-label" style="display:block; font-weight:600; margin-bottom: 6px;">Your Rating *</label>
+            <div class="star-picker" id="star-picker" style="font-size: 1.8rem; color: #E2E8F0; cursor: pointer; display: inline-flex; gap: 5px;">
+              <span class="star-pick" data-val="1" style="transition: color 0.15s ease;">&#9733;</span>
+              <span class="star-pick" data-val="2" style="transition: color 0.15s ease;">&#9733;</span>
+              <span class="star-pick" data-val="3" style="transition: color 0.15s ease;">&#9733;</span>
+              <span class="star-pick" data-val="4" style="transition: color 0.15s ease;">&#9733;</span>
+              <span class="star-pick" data-val="5" style="transition: color 0.15s ease;">&#9733;</span>
+            </div>
+            <input type="hidden" id="review-rating-val" value="0">
+          </div>
+          <div class="review-form-row" style="margin-bottom: 15px;">
+            <label class="review-form-label" for="review-title" style="display:block; font-weight:600; margin-bottom: 6px;">Review Title *</label>
+            <input type="text" id="review-title" class="review-form-input" placeholder="Summarize your experience (e.g. 'Beautiful fabric!')" maxlength="80" required style="width:100%; padding: 12px; border: 1px solid var(--border-light); border-radius: 6px; font-family: inherit;">
+          </div>
+          <div class="review-form-row" style="margin-bottom: 15px;">
+            <label class="review-form-label" for="review-body" style="display:block; font-weight:600; margin-bottom: 6px;">Your Review *</label>
+            <textarea id="review-body" class="review-form-textarea" rows="4" placeholder="Tell others what you liked or disliked about this product..." maxlength="600" required style="width:100%; padding: 12px; border: 1px solid var(--border-light); border-radius: 6px; font-family: inherit; resize: vertical;"></textarea>
+          </div>
+          <div id="review-form-error" class="review-form-error" style="display:none; color: #E53E3E; background: #FFF5F5; padding: 10px; border-radius: 6px; border: 1px solid #FED7D7; margin-bottom: 15px; font-size: 0.88rem;"></div>
+          <div id="review-form-success" class="review-form-success" style="display:none; color: #38A169; background: #F0FFF4; padding: 10px; border-radius: 6px; border: 1px solid #C6F6D5; margin-bottom: 15px; font-size: 0.88rem;"></div>
+          <button type="submit" class="btn btn-primary review-submit-btn" id="review-submit-btn" style="width: auto; padding: 12px 30px;">
+            <i class="fas fa-paper-plane" style="margin-right:6px;"></i> Submit Review
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- Related Products -->
+    <section class="related-section" id="related-products-section">
+      <h2 class="section-title">You May Also Like</h2>
+      <p class="section-subtitle">Related Outfits Handpicked For You</p>
+      <div class="product-grid" id="related-product-grid">
+        <!-- Rendered Dynamically -->
+      </div>
+    </section>
+  </main>
+
+  <!-- Size Chart Modal -->
+  <div class="modal" id="size-chart-modal">
+    <div class="modal-content">
+      <i class="fas fa-times modal-close" id="size-chart-close"></i>
+      <h3 class="modal-title">Size Chart Guideline</h3>
+      <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom: 20px; text-align: center;">Measurements represent body dimensions in inches.</p>
+      <table class="size-chart-table">
+        <thead>
+          <tr>
+            <th>Size Label</th>
+            <th>Bust (in)</th>
+            <th>Waist (in)</th>
+            <th>Hip (in)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>S</td>
+            <td>34 - 35</td>
+            <td>28 - 29</td>
+            <td>38 - 39</td>
+          </tr>
+          <tr>
+            <td>M</td>
+            <td>36 - 37</td>
+            <td>30 - 31</td>
+            <td>40 - 41</td>
+          </tr>
+          <tr>
+            <td>L</td>
+            <td>38 - 39</td>
+            <td>32 - 33</td>
+            <td>42 - 43</td>
+          </tr>
+          <tr>
+            <td>XL</td>
+            <td>40 - 42</td>
+            <td>35 - 37</td>
+            <td>45 - 47</td>
+          </tr>
+          <tr>
+            <td>XXL</td>
+            <td>44 - 46</td>
+            <td>39 - 41</td>
+            <td>49 - 51</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Drawer Backdrop -->
+  <div class="backdrop" id="backdrop"></div>
+  <div class="drawer" id="cart-drawer">
+    <div class="drawer-header">
+      <h3 class="drawer-title">Shopping Bag</h3>
+      <button class="drawer-close" aria-label="Close Cart"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="cart-drawer-content" id="cart-drawer-items">
+      <!-- App.js renders this -->
+    </div>
+    <div class="cart-drawer-footer" id="cart-drawer-footer">
+      <div class="cart-subtotal-row">
+        <span>Order Subtotal:</span>
+        <span id="cart-drawer-subtotal">₹0</span>
+      </div>
+      <div class="cart-drawer-actions">
+        <a href="cart.html" class="btn btn-secondary">View Shopping Bag</a>
+        <a href="checkout.html" class="btn btn-primary">Proceed to Checkout</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Menu Drawer -->
+  <div class="drawer mobile-nav-drawer" id="mobile-menu">
+    <div class="drawer-header">
+      <h3 class="drawer-title">Menu</h3>
+      <button class="drawer-close" aria-label="Close Menu"><i class="fas fa-times"></i></button>
+    </div>
+    <ul class="mobile-nav-list">
+      <li><a href="index.html" class="mobile-nav-link">Home</a></li>
+      <li><a href="shop.html" class="mobile-nav-link">Shop All</a></li>
+      <li><a href="shop.html?category=Kurtas%20%26%20Suits" class="mobile-nav-link">Kurtas & Suits</a></li>
+      <li><a href="shop.html?category=Sarees" class="mobile-nav-link">Sarees</a></li>
+      <li><a href="shop.html?category=Lehengas" class="mobile-nav-link">Lehengas</a></li>
+      <li><a href="shop.html?category=Fusion%20Wear" class="mobile-nav-link">Fusion Wear</a></li>
+      <li><a href="about.html" class="mobile-nav-link">Our Brand Story</a></li>
+      <li><a href="contact.html" class="mobile-nav-link">Contact & Store</a></li>
+    </ul>
+  </div>
+
+  <!-- Footer -->
+  <footer class="main-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-info">
+          <div class="footer-logo">MISSARA<span>.</span></div>
+          <p class="footer-desc">Premium Ladies' Ethnic Wear Boutique. Crafting gorgeous, high-quality kurtas, suit sets, sarees, and lehengas tailored to celebrate modern Indian women.</p>
+          <div class="footer-socials">
+            <a href="#" class="social-icon" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" class="social-icon" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+            <a href="#" class="social-icon" aria-label="Pinterest"><i class="fab fa-pinterest-p"></i></a>
+            <a href="#" class="social-icon" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h4 class="footer-title">Shop Collection</h4>
+          <ul class="footer-links">
+            <li><a href="shop.html?category=Kurtas%20%26%20Suits">Kurtas & Suit Sets</a></li>
+            <li><a href="shop.html?category=Sarees">Designer Sarees</a></li>
+            <li><a href="shop.html?category=Lehengas">Wedding Lehengas</a></li>
+            <li><a href="shop.html?category=Fusion%20Wear">Modern Fusion Wear</a></li>
+            <li><a href="shop.html">New Arrivals</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4 class="footer-title">Help & Support</h4>
+          <ul class="footer-links">
+            <li><a href="about.html">About Brand</a></li>
+            <li><a href="contact.html">Contact Us</a></li>
+            <li><a href="refund.html">Shipping & Return Policy</a></li>
+            <li><a href="privacy.html">Privacy Policy</a></li>
+            <li><a href="contact.html">Store Locator</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4 class="footer-title">Contact Us</h4>
+          <p class="footer-desc" style="margin-bottom: 12px; font-size: 0.85rem;">
+            <i class="fas fa-map-marker-alt" style="color: var(--primary-pink); margin-right: 8px;"></i> 1st Floor Agrawal Building, Bilhari Main Road, Jabalpur, MP 482020
+          </p>
+          <p class="footer-desc" style="margin-bottom: 12px; font-size: 0.85rem;">
+            <i class="fas fa-phone-alt" style="color: var(--primary-pink); margin-right: 8px;"></i> +91 9713962329
+          </p>
+          <p class="footer-desc" style="margin-bottom: 20px; font-size: 0.85rem;">
+            <i class="fas fa-envelope" style="color: var(--primary-pink); margin-right: 8px;"></i> sales@missaraclothing.com
+          </p>
+          <h4 class="footer-title" style="margin-bottom: 15px; font-size: 0.95rem; font-weight: 500;">Subscribe For Launch Alerts</h4>
+          <form class="newsletter-form">
+            <input type="email" class="newsletter-input" placeholder="Enter your email" required>
+            <button type="submit" class="newsletter-btn">Join</button>
+          </form>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 Missara Clothing. All Rights Reserved. Tailored in Jabalpur, India.</p>
+        <div class="footer-bottom-links">
+          <a href="privacy.html">Privacy Policy</a>
+          <a href="refund.html">Terms & Conditions</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/products.js"></script>
+  <script src="js/shipping.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/product-detail.js"></script>
+  <script src="js/product-reviews.js"></script>
+
+
+  <script>
+    // NimbusPost Pincode Serviceability Checker
+    document.addEventListener("DOMContentLoaded", () => {
+      const pincodeForm = document.getElementById("pincode-form");
+      const pincodeInput = document.getElementById("pincode-input");
+      const pincodeResponse = document.getElementById("pincode-response");
+
+      if (!pincodeForm || !pincodeInput || !pincodeResponse) return;
+
+      pincodeForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const pin = pincodeInput.value.trim();
+        if (!pin) return;
+
+        // Show loading state
+        pincodeResponse.style.display = "block";
+        pincodeResponse.className = "pincode-response";
+        pincodeResponse.innerHTML = `<i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i> Checking serviceability via NimbusPost...`;
+
+        setTimeout(() => {
+          const result = checkPincode(pin);
+
+          if (result.serviceable) {
+            pincodeResponse.className = "pincode-response success";
+            pincodeResponse.innerHTML = `
+              <div style="background-color:#F0FFF4; border:1px solid #C6F6D5; border-radius:6px; padding:14px; margin-top:8px;">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+                  <i class="fas fa-check-circle" style="color:#38A169; font-size:1.1rem;"></i>
+                  <span style="font-weight:700; color:#2F855A; font-size:0.92rem;">Delivery Available!</span>
+                  <span style="background-color:#EBF8FF; color:#2B6CB0; font-size:0.68rem; font-weight:600; padding:2px 8px; border-radius:10px; margin-left:auto;">
+                    <i class="fas fa-paper-plane" style="margin-right:3px;"></i> NimbusPost
+                  </span>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:0.82rem;">
+                  <div style="background-color:#fff; padding:8px 10px; border-radius:4px; border:1px solid #E2E8F0;">
+                    <div style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.5px;">Estimated Delivery</div>
+                    <div style="font-weight:700; color:var(--text-dark); margin-top:2px;">${result.estimatedDate}</div>
+                  </div>
+                  <div style="background-color:#fff; padding:8px 10px; border-radius:4px; border:1px solid #E2E8F0;">
+                    <div style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.5px;">Delivery Speed</div>
+                    <div style="font-weight:700; color:var(--text-dark); margin-top:2px;">${result.estimatedDays.min}-${result.estimatedDays.max} days</div>
+                  </div>
+                  <div style="background-color:#fff; padding:8px 10px; border-radius:4px; border:1px solid #E2E8F0;">
+                    <div style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.5px;">Destination</div>
+                    <div style="font-weight:700; color:var(--text-dark); margin-top:2px;">${result.city}, ${result.state}</div>
+                  </div>
+                  <div style="background-color:#fff; padding:8px 10px; border-radius:4px; border:1px solid #E2E8F0;">
+                    <div style="color:var(--text-muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.5px;">COD Available</div>
+                    <div style="font-weight:700; color:#38A169; margin-top:2px;"><i class="fas fa-check"></i> Yes</div>
+                  </div>
+                </div>
+                <div style="margin-top:10px; font-size:0.75rem; color:var(--text-muted); display:flex; align-items:center; gap:5px;">
+                  <i class="fas fa-shipping-fast" style="color:var(--primary-pink);"></i>
+                  Free Shipping on all prepaid orders • Zone ${result.zone} (${result.zoneLabel})
+                </div>
+              </div>
+            `;
+          } else {
+            pincodeResponse.className = "pincode-response error";
+            pincodeResponse.innerHTML = `
+              <div style="background-color:#FFF5F5; border:1px solid #FED7D7; border-radius:6px; padding:12px; margin-top:8px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <i class="fas fa-times-circle" style="color:#E53E3E; font-size:1.1rem;"></i>
+                  <span style="font-weight:600; color:#C53030; font-size:0.88rem;">${result.error}</span>
+                </div>
+              </div>
+            `;
+          }
+        }, 500);
+      });
+    });
+  </script>
+</body>
+</html>

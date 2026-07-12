@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Dashboard | Missara Clothing</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* Dashboard specific styling */
+    .dashboard-wrapper {
+      margin: 40px auto;
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 30px;
+      align-items: start;
+    }
+    
+    .dashboard-sidebar {
+      background: white;
+      border: 1px solid var(--border-light);
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: var(--shadow-sm);
+    }
+    
+    .user-profile-summary {
+      text-align: center;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border-light);
+      margin-bottom: 20px;
+    }
+    
+    .user-avatar {
+      font-size: 3.5rem;
+      color: var(--primary-pink);
+      margin-bottom: 10px;
+    }
+    
+    .user-info h3 {
+      font-family: var(--font-heading);
+      color: var(--text-dark);
+      font-size: 1.3rem;
+      margin-bottom: 5px;
+    }
+    
+    .user-info p {
+      font-size: 0.85rem;
+      color: var(--text-light);
+    }
+    
+    .dashboard-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 15px;
+      background: transparent;
+      border: none;
+      border-radius: 8px;
+      color: var(--text-dark);
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.3s;
+      width: 100%;
+    }
+    
+    .nav-item:hover, .nav-item.active {
+      background: var(--secondary-pink);
+      color: var(--primary-pink);
+    }
+    
+    .nav-item.logout-btn {
+      margin-top: 15px;
+      color: #e74c3c;
+      border-top: 1px solid var(--border-light);
+      padding-top: 20px;
+      border-radius: 0;
+    }
+    
+    .nav-item.logout-btn:hover {
+      background: #fdf2f2;
+      color: #c0392b;
+    }
+    
+    .dashboard-content {
+      background: white;
+      border: 1px solid var(--border-light);
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: var(--shadow-sm);
+      min-height: 450px;
+    }
+    
+    .tab-pane {
+      display: none;
+    }
+    
+    .tab-pane.active {
+      display: block;
+    }
+    
+    .tab-title {
+      font-family: var(--font-heading);
+      color: var(--text-dark);
+      font-size: 1.7rem;
+      margin-bottom: 25px;
+      border-bottom: 2px solid var(--secondary-pink);
+      padding-bottom: 10px;
+    }
+    
+    /* Order specific styling */
+    .order-card {
+      border: 1px solid var(--border-light);
+      border-radius: 10px;
+      margin-bottom: 20px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+      transition: box-shadow 0.3s;
+    }
+    
+    .order-card:hover {
+      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+    
+    .order-header {
+      background: var(--bg-cream);
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-light);
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    
+    .order-meta {
+      display: flex;
+      gap: 25px;
+      flex-wrap: wrap;
+    }
+    
+    .meta-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    
+    .meta-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      color: var(--text-light);
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    
+    .meta-value {
+      font-size: 0.9rem;
+      color: var(--text-dark);
+      font-weight: 500;
+    }
+    
+    .status-badge {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    
+    .status-pending { background: #ffeaa7; color: #d63031; }
+    .status-processing { background: #dfe6e9; color: #2d3436; }
+    .status-shipped { background: #e8f4fd; color: #0984e3; }
+    .status-delivered { background: #e2fbe8; color: #27ae60; }
+    .status-cancelled { background: #fadbd8; color: #c0392b; }
+    
+    .order-body {
+      padding: 20px;
+    }
+    
+    .order-items {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    
+    .order-item-row {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .order-item-img {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 6px;
+      border: 1px solid var(--border-light);
+    }
+    
+    .order-item-info {
+      flex: 1;
+    }
+    
+    .order-item-name {
+      font-weight: 600;
+      color: var(--text-dark);
+      font-size: 0.95rem;
+      text-decoration: none;
+    }
+    
+    .order-item-name:hover {
+      color: var(--primary-pink);
+    }
+    
+    .order-item-qty {
+      font-size: 0.85rem;
+      color: var(--text-light);
+      margin-top: 3px;
+    }
+    
+    .order-item-price {
+      font-weight: 600;
+      color: var(--text-dark);
+    }
+    
+    /* Tracking Timeline */
+    .tracking-timeline-container {
+      background: var(--bg-cream);
+      padding: 20px;
+      border-radius: 8px;
+      border: 1px solid var(--border-light);
+      margin-top: 15px;
+    }
+    
+    .timeline-title {
+      font-weight: 600;
+      color: var(--text-dark);
+      margin-bottom: 15px;
+      font-size: 0.95rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .tracking-timeline {
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+      margin-top: 25px;
+      margin-bottom: 10px;
+    }
+    
+    .tracking-timeline::before {
+      content: '';
+      position: absolute;
+      top: 15px;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--border-light);
+      z-index: 1;
+    }
+    
+    .timeline-progress {
+      position: absolute;
+      top: 15px;
+      left: 0;
+      height: 4px;
+      background: var(--primary-pink);
+      z-index: 2;
+      transition: width 0.5s ease;
+    }
+    
+    .timeline-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      z-index: 3;
+      width: 25%;
+    }
+    
+    .step-dot {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: white;
+      border: 3px solid var(--border-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      color: var(--text-light);
+      transition: all 0.3s;
+    }
+    
+    .timeline-step.completed .step-dot {
+      border-color: var(--primary-pink);
+      background: var(--primary-pink);
+      color: white;
+    }
+    
+    .timeline-step.active .step-dot {
+      border-color: var(--primary-pink);
+      color: var(--primary-pink);
+      box-shadow: 0 0 10px rgba(219, 34, 85, 0.2);
+    }
+    
+    .step-label {
+      margin-top: 10px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-light);
+      text-align: center;
+    }
+    
+    .timeline-step.completed .step-label, 
+    .timeline-step.active .step-label {
+      color: var(--text-dark);
+    }
+    
+    /* Profile styling */
+    .profile-card {
+      background: var(--bg-cream);
+      border-radius: 10px;
+      border: 1px solid var(--border-light);
+      padding: 25px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    
+    .profile-field {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-light);
+      padding-bottom: 12px;
+    }
+    
+    .profile-field:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+    
+    .field-label {
+      font-weight: 600;
+      color: var(--text-light);
+      font-size: 0.95rem;
+    }
+    
+    .field-value {
+      font-weight: 500;
+      color: var(--text-dark);
+      font-size: 0.95rem;
+    }
+    
+    .loader-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 50px 0;
+      color: var(--text-light);
+      gap: 15px;
+    }
+    
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(219, 34, 85, 0.1);
+      border-top: 4px solid var(--primary-pink);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    .no-orders-container {
+      text-align: center;
+      padding: 60px 0;
+      color: var(--text-light);
+    }
+    
+    .no-orders-container i {
+      font-size: 3.5rem;
+      margin-bottom: 15px;
+      color: var(--border-light);
+    }
+    
+    .btn-shop-now {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 12px 25px;
+      background: var(--primary-pink);
+      color: white;
+      text-decoration: none;
+      font-weight: 600;
+      border-radius: 6px;
+      transition: background 0.3s;
+    }
+    
+    .btn-shop-now:hover {
+      background: #d12255;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    @media (max-width: 992px) {
+      .dashboard-wrapper {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Announcement Bar -->
+  <div class="announcement-bar">
+    <div class="announcement-slider">
+      <span class="announcement-item">🌸 FREE SHIPPING ACROSS INDIA | EASY RETURNS 🌸</span>
+      <span class="announcement-item">✨ EXQUISITE ETHNIC LADIES WEAR REVAMP ✨</span>
+      <span class="announcement-item">💖 USE CODE <b>MISSARA10</b> FOR 10% INSTANT DISCOUNT 💖</span>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="main-header">
+    <div class="header-container">
+      <div class="header-left">
+        <button class="menu-toggle-btn open-menu-btn" aria-label="Open Navigation Menu">
+          <i class="fas fa-bars"></i>
+          <span class="btn-text">MENU</span>
+        </button>
+        <button class="search-toggle-btn" id="search-toggle-btn" aria-label="Toggle Search">
+          <i class="fas fa-search"></i>
+          <span class="btn-text">SEARCH</span>
+        </button>
+      </div>
+      
+      <div class="logo">
+        <a href="index.html">
+          <img src="images/logo.png" alt="Missara Logo" class="header-logo-img">
+          MISSARA<span class="logo-dot">.</span>
+        </a>
+      </div>
+      
+      <div class="header-right">
+        <a href="contact.html" class="contact-link">CONTACT US</a>
+        <a href="login.html" class="header-icon-btn" id="user-account-btn" aria-label="My Account">
+          <i class="far fa-user"></i>
+        </a>
+        <a href="shop.html?wishlist=true" class="header-icon-btn" aria-label="Wishlist">
+          <i class="far fa-heart"></i>
+          <span class="icon-badge wishlist-count" style="display: none;">0</span>
+        </a>
+        <a href="#" class="header-icon-btn open-cart-btn" aria-label="Shopping Cart">
+          <i class="fas fa-shopping-bag"></i>
+          <span class="icon-badge cart-count" style="display: none;">0</span>
+        </a>
+      </div>
+    </div>
+    
+    <div class="search-overlay" id="search-overlay">
+      <div class="container">
+        <form class="search-container" id="search-form">
+          <input type="text" class="search-input" id="search-input" placeholder="Search for Kurtas, Suits, Sarees, Lehengas..." autocomplete="off">
+          <button type="submit" class="search-submit">Search</button>
+        </form>
+      </div>
+    </div>
+  </header>
+
+  <!-- Dashboard Container -->
+  <main class="container">
+    <div class="dashboard-wrapper">
+      <!-- Sidebar Navigation -->
+      <aside class="dashboard-sidebar">
+        <div class="user-profile-summary">
+          <div class="user-avatar">
+            <i class="fas fa-user-circle"></i>
+          </div>
+          <div class="user-info">
+            <h3 id="profile-greeting">Loading...</h3>
+            <p id="profile-subemail">Loading...</p>
+          </div>
+        </div>
+        <nav class="dashboard-nav">
+          <button class="nav-item active" data-target="orders-tab">
+            <i class="fas fa-box"></i> My Orders
+          </button>
+          <button class="nav-item" data-target="profile-tab">
+            <i class="fas fa-user-edit"></i> Profile Details
+          </button>
+          <button class="nav-item logout-btn" id="dash-logout-btn">
+            <i class="fas fa-sign-out-alt"></i> Logout
+          </button>
+        </nav>
+      </aside>
+
+      <!-- Content Views -->
+      <section class="dashboard-content">
+        <!-- Orders Tab -->
+        <div class="tab-pane active" id="orders-tab">
+          <h2 class="tab-title">Order History</h2>
+          
+          <!-- Loader -->
+          <div id="orders-loader" class="loader-container">
+            <div class="spinner"></div>
+            <p>Loading your orders...</p>
+          </div>
+          
+          <!-- Orders list injection -->
+          <div id="orders-list" class="orders-list"></div>
+          
+          <!-- No orders placeholder -->
+          <div id="no-orders" class="no-orders-container" style="display: none;">
+            <i class="fas fa-shopping-bag"></i>
+            <p>You haven't placed any orders yet.</p>
+            <a href="shop.html" class="btn-shop-now">Start Shopping</a>
+          </div>
+        </div>
+
+        <!-- Profile Tab -->
+        <div class="tab-pane" id="profile-tab">
+          <h2 class="tab-title">Account Details</h2>
+          <div class="profile-card">
+            <div class="profile-field">
+              <span class="field-label">Full Name</span>
+              <span class="field-value" id="profile-name">-</span>
+            </div>
+            <div class="profile-field">
+              <span class="field-label">Email Address</span>
+              <span class="field-value" id="profile-email">-</span>
+            </div>
+            <div class="profile-field">
+              <span class="field-label">Phone Number</span>
+              <span class="field-value" id="profile-phone">-</span>
+            </div>
+            <div class="profile-field">
+              <span class="field-label">Account Role</span>
+              <span class="field-value" id="profile-role">Customer</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Global Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <div class="footer-logo">MISSARA<span>.</span></div>
+          <p class="footer-desc">Premium Indian Ethnic wear brand representing timeless designs, elegant textures, and absolute perfection.</p>
+          <div class="social-links">
+            <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+            <a href="#" aria-label="Pinterest"><i class="fab fa-pinterest-p"></i></a>
+          </div>
+        </div>
+        
+        <div class="footer-col">
+          <h4 class="footer-title">Shop Collection</h4>
+          <ul class="footer-links">
+            <li><a href="shop.html?category=Kurtas%20%26%20Suits">Kurtas & Suit Sets</a></li>
+            <li><a href="shop.html?category=Sarees">Designer Sarees</a></li>
+            <li><a href="shop.html?category=Lehengas">Wedding Lehengas</a></li>
+            <li><a href="shop.html?category=Fusion%20Wear">Modern Fusion Wear</a></li>
+            <li><a href="shop.html">New Arrivals</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-col">
+          <h4 class="footer-title">Help & Support</h4>
+          <ul class="footer-links">
+            <li><a href="about.html">About Brand</a></li>
+            <li><a href="contact.html">Contact Us</a></li>
+            <li><a href="refund.html">Shipping & Return Policy</a></li>
+            <li><a href="privacy.html">Privacy Policy</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-col">
+          <h4 class="footer-title">Contact Us</h4>
+          <p class="footer-desc"><i class="fas fa-map-marker-alt"></i> 1st Floor Agrawal Building, Jabalpur, MP 482020</p>
+          <p class="footer-desc"><i class="fas fa-phone-alt"></i> +91 9713962329</p>
+          <p class="footer-desc"><i class="fas fa-envelope"></i> sales@missaraclothing.com</p>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p>&copy; 2026 Missara Clothing. All Rights Reserved. Tailored in Jabalpur, India.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Drawer Backdrop -->
+  <div class="backdrop" id="backdrop"></div>
+
+  <!-- Shopping Cart Slide-in Drawer -->
+  <div class="drawer" id="cart-drawer">
+    <div class="drawer-header">
+      <h3 class="drawer-title">Shopping Bag</h3>
+      <button class="drawer-close" aria-label="Close Shopping Bag Drawer"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="cart-drawer-content" id="cart-drawer-items"></div>
+    <div class="cart-drawer-footer" id="cart-drawer-footer">
+      <div class="cart-subtotal-row">
+        <span>Order Subtotal:</span>
+        <span id="cart-drawer-subtotal">₹0</span>
+      </div>
+      <div class="cart-drawer-actions">
+        <a href="cart.html" class="btn btn-secondary">View Shopping Bag</a>
+        <a href="checkout.html" class="btn btn-primary">Proceed to Checkout</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Drawer Menu -->
+  <div class="drawer mobile-nav-drawer" id="mobile-menu">
+    <div class="drawer-header">
+      <h3 class="drawer-title">Menu</h3>
+      <button class="drawer-close" aria-label="Close Navigation Drawer"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="drawer-content">
+      <ul class="mobile-nav-list">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="shop.html">Shop All</a></li>
+        <li><a href="shop.html?category=Kurtas%20%26%20Suits">Kurtas & Suits</a></li>
+        <li><a href="shop.html?category=Sarees">Sarees</a></li>
+        <li><a href="shop.html?category=Lehengas">Lehengas</a></li>
+        <li><a href="shop.html?category=Fusion%20Wear">Fusion Wear</a></li>
+        <li><a href="contact.html">Contact Us</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>
