@@ -4,6 +4,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   await initApp();
 });
 
+// Global event listener to fallback broken images to Missara Logo
+document.addEventListener('error', function (e) {
+  if (e.target.tagName && e.target.tagName.toLowerCase() === 'img') {
+    if (!e.target.src.endsWith('images/logo.png')) {
+      e.target.src = 'images/logo.png';
+    }
+  }
+}, true); // Use capture phase as error event does not bubble
+
 // App State
 let cart = [];
 let wishlist = [];
@@ -350,7 +359,19 @@ function setupSearchListeners() {
   const searchInput = document.getElementById("search-input");
   const searchForm = document.getElementById("search-form");
 
-  if (searchBtn && searchOverlay) {
+  if (!searchOverlay) return;
+
+  // Create suggestions dropdown container if it doesn't exist
+  const container = searchOverlay.querySelector(".container");
+  let suggestionsBox = document.getElementById("search-suggestions");
+  if (container && !suggestionsBox) {
+    suggestionsBox = document.createElement("div");
+    suggestionsBox.id = "search-suggestions";
+    suggestionsBox.className = "search-suggestions-dropdown";
+    container.appendChild(suggestionsBox);
+  }
+
+  if (searchBtn) {
     searchBtn.addEventListener("click", (e) => {
       e.preventDefault();
       const isVisible = searchOverlay.style.display === "block";
@@ -358,12 +379,70 @@ function setupSearchListeners() {
       if (!isVisible && searchInput) {
         searchInput.focus();
       }
+      if (suggestionsBox) suggestionsBox.style.display = "none";
+      if (searchInput) searchInput.value = "";
     });
 
     // Close on escape key
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
         searchOverlay.style.display = "none";
+        if (suggestionsBox) suggestionsBox.style.display = "none";
+      }
+    });
+  }
+
+  if (searchInput && suggestionsBox) {
+    searchInput.addEventListener("input", () => {
+      const query = searchInput.value.trim().toLowerCase();
+      if (query.length < 2) {
+        suggestionsBox.style.display = "none";
+        return;
+      }
+
+      // Filter products (check title, category, style, tags)
+      const matches = (typeof PRODUCTS !== "undefined" ? PRODUCTS : []).filter(p => {
+        return (p.title && p.title.toLowerCase().includes(query)) ||
+               (p.category && p.category.toLowerCase().includes(query)) ||
+               (p.style && p.style.toLowerCase().includes(query)) ||
+               (p.tag && p.tag.toLowerCase().includes(query));
+      }).slice(0, 5); // limit to top 5 matches
+
+      if (matches.length === 0) {
+        suggestionsBox.innerHTML = `<div class="search-suggestions-no-results">No products found matching "${searchInput.value}"</div>`;
+        suggestionsBox.style.display = "block";
+        return;
+      }
+
+      let html = "";
+      matches.forEach(p => {
+        const hasDiscount = p.originalPrice && p.originalPrice > p.price;
+        const priceHTML = hasDiscount 
+          ? `<span class="original">₹${p.originalPrice.toLocaleString()}</span>₹${p.price.toLocaleString()}`
+          : `₹${p.price.toLocaleString()}`;
+          
+        html += `
+          <a href="product.html?id=${p.id}" class="search-suggestion-item">
+            <img src="${p.image || 'images/logo.png'}" class="search-suggestion-img" alt="${p.title}">
+            <div class="search-suggestion-info">
+              <span class="search-suggestion-title">${p.title}</span>
+              <span class="search-suggestion-cat">${p.category}</span>
+            </div>
+            <div class="search-suggestion-price">
+              ${priceHTML}
+            </div>
+          </a>
+        `;
+      });
+
+      suggestionsBox.innerHTML = html;
+      suggestionsBox.style.display = "block";
+    });
+
+    // Close dropdown on clicking outside
+    document.addEventListener("click", (e) => {
+      if (!searchOverlay.contains(e.target) && e.target !== searchBtn && !searchBtn.contains(e.target)) {
+        suggestionsBox.style.display = "none";
       }
     });
   }
