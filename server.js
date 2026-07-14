@@ -310,6 +310,28 @@ function generateWelcomeEmailHTML(name) {
   `;
 }
 
+function generateWelcomeBackEmailHTML(name) {
+  const domainUrl = process.env.DOMAIN_URL || 'https://missaraclothing.com';
+  return `
+    ${getEmailHeader('Welcome Back! ✨')}
+    <h3>Hello ${name},</h3>
+    <p>Welcome back to Missara Clothing! We noticed you just logged back into your account.</p>
+    
+    <p>We are constantly designing and launching new exquisite ethnic outfits. Since your last visit, we've updated our collection with fresh styles that you might absolutely fall in love with!</p>
+    
+    <div class="order-card" style="text-align: center; padding: 25px;">
+      <h3 style="margin-top: 0; color: #b5838d; font-family: 'Georgia', serif;">Check Out What's New</h3>
+      <p style="font-size: 14px; margin-bottom: 20px; color: #7a6e6e;">Browse our latest arrivals and premium ethnic sets tailored just for you.</p>
+      <a href="${domainUrl}/shop.html" class="btn" style="color: #ffffff; text-decoration: none;">View New Arrivals</a>
+    </div>
+    
+    <p>If you didn't trigger this login or have any security questions, please reach out to us immediately.</p>
+    
+    <p>Warmest regards,<br>Team Missara Clothing</p>
+    ${getEmailFooter()}
+  `;
+}
+
 // Razorpay will be initialized dynamically per request using database settings
 
 // Middleware
@@ -480,6 +502,10 @@ app.post('/api/auth/login', async (req, res) => {
     if (!isMatch) return res.status(401).json({ success: false, message: 'Invalid email or password' });
 
     const token = jwt.sign({ id: user._id || user.id }, JWT_SECRET, { expiresIn: '7d' });
+    
+    // Trigger welcome back email in the background
+    sendRealMail(user.email, 'Welcome Back to Missara! ✨', generateWelcomeBackEmailHTML(user.name));
+
     res.json({ success: true, token, user: { name: user.name, email: user.email, phone: user.phone } });
   } catch (error) {
     console.error('Login error:', error);
