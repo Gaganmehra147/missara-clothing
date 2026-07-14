@@ -484,6 +484,9 @@ async function openPaymentGateway(orderData) {
               
               if (verifyResult.verified) {
                 orderData.paymentOption = `Razorpay (Paid: ${response.razorpay_payment_id})`;
+                orderData.razorpayPaymentId = response.razorpay_payment_id;
+                orderData.razorpayOrderId = response.razorpay_order_id;
+                orderData.razorpaySignature = response.razorpay_signature;
                 completeCheckoutOrder(orderData);
               } else {
                 throw new Error('Payment verification unsuccessful');
@@ -545,6 +548,9 @@ function openMockRazorpayGateway(orderData, settings) {
     modal.style.display = "none";
     const mockPaymentId = `pay_mock_${Math.floor(100000000000 + Math.random() * 900000000000)}`;
     orderData.paymentOption = `Razorpay Sandbox (Txn: ${mockPaymentId})`;
+    orderData.razorpayPaymentId = mockPaymentId;
+    orderData.razorpayOrderId = `order_mock_${Math.floor(100000000000 + Math.random() * 900000000000)}`;
+    orderData.razorpaySignature = 'mock_signature';
     completeCheckoutOrder(orderData);
   };
   
@@ -704,6 +710,9 @@ async function completeCheckoutOrder(orderData) {
     codCharge: orderData.codCharge,
     total: orderData.grandTotal,
     paymentMethod: orderData.paymentOption,
+    razorpayPaymentId: orderData.razorpayPaymentId || null,
+    razorpayOrderId: orderData.razorpayOrderId || null,
+    razorpaySignature: orderData.razorpaySignature || null,
     estimatedDelivery: orderData.estimatedDelivery || "",
     deliveryZone: orderData.deliveryZone || "C"
   };

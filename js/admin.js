@@ -35,24 +35,35 @@ function setupAdminSecurity() {
 
   // Handle PIN unlock form submit
   if (loginForm) {
-    loginForm.addEventListener("submit", (e) => {
+    loginForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       const pin = document.getElementById("admin-pin-input").value.trim();
 
-      // Simple mock pin: "admin" or "1234" or "missara"
-      if (pin === "admin" || pin === "1234" || pin.toLowerCase() === "missara") {
-        sessionStorage.setItem("missara_admin_unlocked", "true");
-        sessionStorage.setItem("missara_admin_pin", pin === "admin" || pin.toLowerCase() === "missara" ? "1234" : pin);
-        if (lockScreen) {
-          lockScreen.style.opacity = "0";
-          setTimeout(() => {
-            lockScreen.style.display = "none";
-          }, 300);
+      try {
+        const response = await fetch('/api/admin/verify-pin', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-admin-pin': pin
+          }
+        });
+
+        if (response.ok) {
+          sessionStorage.setItem("missara_admin_unlocked", "true");
+          sessionStorage.setItem("missara_admin_pin", pin);
+          if (lockScreen) {
+            lockScreen.style.opacity = "0";
+            setTimeout(() => {
+              lockScreen.style.display = "none";
+            }, 300);
+          }
+          showToast("Portal Unlocked Successfully!");
+        } else {
+          showToast("Incorrect Security PIN code!", "error");
+          document.getElementById("admin-pin-input").value = "";
         }
-        showToast("Portal Unlocked Successfully!");
-      } else {
-        showToast("Incorrect Security PIN code!", "error");
-        document.getElementById("admin-pin-input").value = "";
+      } catch (err) {
+        showToast("Could not contact server to verify PIN", "error");
       }
     });
   }

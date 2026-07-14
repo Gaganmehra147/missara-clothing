@@ -10,6 +10,7 @@ const nodemailer = require('nodemailer');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const axios = require('axios');
+const rateLimit = require('express-rate-limit');
 const mongoose = require('mongoose');
 const db = require('./db');
 const { Product, Order, Email, User, Review } = require('./models');
@@ -290,8 +291,68 @@ function generateOrderDeliveredHTML(order) {
 // Razorpay will be initialized dynamically per request using database settings
 
 // Middleware
-app.use(cors());
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',')
+  : ['https://missaraclothing.com', 'http://localhost:3000'];
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, curl, etc)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      return callback(null, true);
+    }
+    return callback(new Error('Not allowed by CORS'));
+  }
+}));
 app.use(express.json({ limit: '50mb' })); // support multiple base64 images
+
+// ==========================================
+// SECURITY: Block access to sensitive files
+// ==========================================
+const BLOCKED_PATHS = ['/data/', '/models/', '/.env', '/.git', '/db.js', '/server.js', '/package.json', '/package-lock.json', '/node_modules/', '/.gemini/', '/.agents/'];
+app.use((req, res, next) => {
+  const urlPath = req.path.toLowerCase();
+  for (const blocked of BLOCKED_PATHS) {
+    if (urlPath === blocked || urlPath.startsWith(blocked)) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+  }
+  next();
+});
+
+// ==========================================
+// SECURITY: Global Rate Limiting
+// ==========================================
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 300, // max 300 requests per 15 min per IP
+  message: { error: 'Too many requests, please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+app.use('/api/', globalLimiter);
+
+// Strict rate limit for auth endpoints (brute force protection)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // max 10 login attempts per 15 min
+  message: { error: 'Too many login attempts. Please try again after 15 minutes.' },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/register', authLimiter);
+app.use('/api/auth/forgot-password', authLimiter);
+
+// Strict rate limit for chat API (prevent Gemini billing abuse)
+const chatLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 5, // max 5 chat messages per minute
+  message: { error: 'Chat rate limit exceeded. Please wait a moment.' },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+app.use('/api/chat', chatLimiter);
 
 // Serve static frontend files from the root
 app.use(express.static('.'));
@@ -307,11 +368,16 @@ function validateAdminPIN(req, res, next) {
   }
 }
 
+// Verify Admin PIN
+app.post('/api/admin/verify-pin', validateAdminPIN, (req, res) => {
+  res.json({ success: true, message: 'PIN is valid' });
+});
+
 // ==========================================
 // AUTHENTICATION API ENDPOINTS
 // ==========================================
 
-const JWT_SECRET = process.env.JWT_SECRET || 'missara-super-secret-key-2026';
+const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(64).toString('hex');
 
 // Middleware to verify JWT
 const verifyToken = (req, res, next) => {
@@ -611,8 +677,8 @@ app.delete('/api/products/:id', validateAdminPIN, async (req, res) => {
   }
 });
 
-// Adjust product stock
-app.put('/api/products/:id/stock', async (req, res) => {
+// Adjust product stock (Admin only)
+app.put('/api/products/:id/stock', validateAdminPIN, async (req, res) => {
   try {
     const prodId = parseInt(req.params.id);
     const { inventory } = req.body;
@@ -826,34 +892,131 @@ app.get('/api/orders', validateAdminPIN, async (req, res) => {
   }
 });
 
-// Get a single order (For tracking)
+// Get a single order (For tracking - requires orderId + email for verification)
 app.get('/api/orders/:id', async (req, res) => {
   try {
+    const verifyEmail = (req.query.email || '').toLowerCase().trim();
+    
+    let order;
     if (isMongoDBActive) {
-      const order = await Order.findOne({ orderId: req.params.id });
-      if (order) {
-        res.json(order);
-      } else {
-        res.status(404).json({ error: 'Order not found' });
-      }
+      order = await Order.findOne({ orderId: req.params.id });
     } else {
       const orders = db.getOrders();
-      const order = orders.find(o => o.orderId === req.params.id);
-      if (order) {
-        res.json(order);
-      } else {
-        res.status(404).json({ error: 'Order not found' });
+      order = orders.find(o => o.orderId === req.params.id);
+    }
+    
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+    
+    // If email query param provided, verify it matches (for public tracking)
+    // Admin requests (with x-admin-pin) skip this check
+    const adminPin = req.headers['x-admin-pin'];
+    const expectedPin = process.env.ADMIN_PIN || '1234';
+    const isAdmin = adminPin === expectedPin;
+    
+    if (!isAdmin && verifyEmail) {
+      const orderEmail = (order.customer && order.customer.email || '').toLowerCase().trim();
+      if (orderEmail !== verifyEmail) {
+        return res.status(403).json({ error: 'Email does not match this order' });
       }
     }
+    
+    // Return limited info for public tracking (no full address/phone)
+    if (!isAdmin && !verifyEmail) {
+      // Public tracking without email - return only status info
+      return res.json({
+        orderId: order.orderId,
+        status: order.status,
+        date: order.date,
+        itemCount: order.items ? order.items.length : 0,
+        estimatedDelivery: order.estimatedDelivery,
+        courierPartner: order.courierPartner,
+        trackingId: order.trackingId
+      });
+    }
+    
+    res.json(order);
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
 });
 
-// Place a new order
+// Place a new order (with input validation)
 app.post('/api/orders', async (req, res) => {
   try {
     const newOrder = req.body;
+    
+    // Basic input validation
+    if (!newOrder.orderId || !newOrder.customer || !newOrder.items || !Array.isArray(newOrder.items) || newOrder.items.length === 0) {
+      return res.status(400).json({ error: 'Invalid order data: orderId, customer, and items are required' });
+    }
+    
+    const { customer } = newOrder;
+    if (!customer.name || !customer.email || !customer.phone || !customer.address) {
+      return res.status(400).json({ error: 'Invalid customer data: name, email, phone, and address are required' });
+    }
+    
+    // Sanitize string fields to prevent XSS
+    const sanitize = (str) => typeof str === 'string' ? str.replace(/<[^>]*>/g, '').trim() : str;
+    customer.name = sanitize(customer.name);
+    customer.email = sanitize(customer.email);
+    customer.phone = sanitize(customer.phone);
+    customer.address = sanitize(customer.address);
+    if (customer.city) customer.city = sanitize(customer.city);
+    if (customer.state) customer.state = sanitize(customer.state);
+    if (customer.pincode) customer.pincode = sanitize(customer.pincode);
+    
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(customer.email)) {
+      return res.status(400).json({ error: 'Invalid email address' });
+    }
+    
+    // Validate phone format (Indian mobile)
+    const phoneRegex = /^[6-9]\d{9}$/;
+    if (!phoneRegex.test(customer.phone.replace(/\D/g, '').slice(-10))) {
+      return res.status(400).json({ error: 'Invalid phone number' });
+    }
+
+    // Verify payment if not Cash on Delivery
+    if (newOrder.paymentMethod && !newOrder.paymentMethod.toUpperCase().includes('COD')) {
+      const { razorpayPaymentId, razorpayOrderId, razorpaySignature } = newOrder;
+      
+      // Check database settings & env for keys
+      const settings = db.getSettings();
+      const keySecret = settings.keySecret || process.env.RAZORPAY_KEY_SECRET;
+      
+      const isMockPayment = razorpayPaymentId && razorpayPaymentId.startsWith('pay_mock_');
+      
+      if (isMockPayment) {
+        // If live secret is configured, reject fake mock payments
+        if (keySecret && keySecret.trim() !== '') {
+          return res.status(400).json({ error: 'Mock payments are disabled in production' });
+        }
+      } else {
+        // Real payment signature verification
+        if (!razorpayPaymentId || !razorpayOrderId || !razorpaySignature) {
+          return res.status(400).json({ error: 'Payment details are missing' });
+        }
+        
+        if (keySecret && keySecret.trim() !== '') {
+          const text = razorpayOrderId + "|" + razorpayPaymentId;
+          const generated_signature = crypto
+            .createHmac('sha256', keySecret)
+            .update(text)
+            .digest('hex');
+            
+          if (generated_signature !== razorpaySignature) {
+            return res.status(400).json({ error: 'Payment signature verification failed' });
+          }
+        } else {
+          // If no secret key is set, we are in test/sandbox environment
+          console.warn('Sandbox order accepted without signature check due to missing key secret');
+        }
+      }
+    }
+    
     newOrder.timestamp = Date.now();
     newOrder.date = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
     newOrder.status = "Pending";
@@ -1083,8 +1246,8 @@ app.post('/api/pay/verify', (req, res) => {
 // CUSTOMER TRANSACTIONAL EMAIL SIMULATOR API
 // ==========================================
 
-// Add sent email to database logs
-app.post('/api/emails', async (req, res) => {
+// Add sent email to database logs (internal use only - protected)
+app.post('/api/emails', validateAdminPIN, async (req, res) => {
   try {
     const newEmail = req.body;
     newEmail.id = Date.now();
@@ -1106,8 +1269,8 @@ app.post('/api/emails', async (req, res) => {
   }
 });
 
-// Get emails for a specific customer email address
-app.get('/api/emails/customer/:email', async (req, res) => {
+// Get emails for a specific customer (requires JWT auth)
+app.get('/api/emails/customer/:email', verifyToken, async (req, res) => {
   try {
     const customerEmail = req.params.email.toLowerCase().trim();
     
@@ -1116,7 +1279,9 @@ app.get('/api/emails/customer/:email', async (req, res) => {
       if (customerEmail === 'all') {
         emails = await Email.find().sort({ id: -1 });
       } else {
-        emails = await Email.find({ to: { $regex: new RegExp("^" + customerEmail + "$", "i") } }).sort({ id: -1 });
+        // Escape special regex chars to prevent ReDoS
+        const escapedEmail = customerEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        emails = await Email.find({ to: { $regex: new RegExp("^" + escapedEmail + "$", "i") } }).sort({ id: -1 });
       }
       res.json(emails);
     } else {
@@ -1147,8 +1312,8 @@ app.get('/api/emails', validateAdminPIN, async (req, res) => {
   }
 });
 
-// Mark email as read
-app.put('/api/emails/:id/read', async (req, res) => {
+// Mark email as read (Admin only)
+app.put('/api/emails/:id/read', validateAdminPIN, async (req, res) => {
   try {
     const emailId = parseInt(req.params.id);
     
