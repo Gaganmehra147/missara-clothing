@@ -332,6 +332,61 @@ function generateWelcomeBackEmailHTML(name) {
   `;
 }
 
+function generateAdminOrderAlertHTML(order) {
+  let itemsHTML = '';
+  order.items.forEach(item => {
+    itemsHTML += `
+      <tr>
+        <td>
+          <strong>${item.title}</strong><br>
+          <span style="font-size: 12px; color: #8c7e7e;">Size: ${item.size} | Qty: ${item.quantity}</span>
+        </td>
+        <td style="text-align: right; vertical-align: middle;">₹${item.price * item.quantity}</td>
+      </tr>
+    `;
+  });
+  
+  const domainUrl = process.env.DOMAIN_URL || 'https://missaraclothing.com';
+  
+  return `
+    ${getEmailHeader('New Order Received! 🛍️')}
+    <h3>Hello Admin,</h3>
+    <p>A new order has been placed on Missara Clothing storefront!</p>
+    
+    <div class="order-card">
+      <h4 style="margin-top: 0; color: #b5838d;">Order ID: #${order.orderId}</h4>
+      <p style="margin: 5px 0; font-size: 13px;"><strong>Date:</strong> ${order.date}</p>
+      <p style="margin: 5px 0; font-size: 13px;"><strong>Payment Method:</strong> ${order.paymentMethod}</p>
+      <p style="margin: 5px 0; font-size: 13px;"><strong>Total Amount:</strong> ₹${order.total.toLocaleString()}</p>
+      
+      <h4 style="color: #b5838d; margin-top: 15px; margin-bottom: 5px;">Customer Details:</h4>
+      <p style="margin: 3px 0; font-size: 13px;"><strong>Name:</strong> ${order.customer.name}</p>
+      <p style="margin: 3px 0; font-size: 13px;"><strong>Email:</strong> ${order.customer.email}</p>
+      <p style="margin: 3px 0; font-size: 13px;"><strong>Phone:</strong> ${order.customer.phone}</p>
+      <p style="margin: 3px 0; font-size: 13px;"><strong>Delivery Address:</strong> ${order.customer.address}</p>
+      
+      <table class="table" style="margin-top: 20px;">
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th style="text-align: right;">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${itemsHTML}
+          <tr class="total-row">
+            <td>Grand Total:</td>
+            <td style="text-align: right;">₹${order.total.toLocaleString()}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <a href="${domainUrl}/admin.html" class="btn" style="color: #ffffff; text-decoration: none;">Open Admin Panel to Manage Order</a>
+    ${getEmailFooter()}
+  `;
+}
+
 // Razorpay will be initialized dynamically per request using database settings
 
 // Middleware
@@ -1089,6 +1144,11 @@ app.post('/api/orders', async (req, res) => {
       // Send real email notification (runs in background)
       sendRealMail(newOrder.customer.email, `Order Confirmation - Missara #${newOrder.orderId}`, generateOrderConfirmationHTML(newOrder));
       
+      // Send admin alert email
+      if (process.env.SMTP_USER) {
+        sendRealMail(process.env.SMTP_USER, `New Order Received! 🛍️ #${newOrder.orderId}`, generateAdminOrderAlertHTML(newOrder));
+      }
+      
       res.status(201).json(order);
     } else {
       // Deduct inventory levels
@@ -1108,6 +1168,11 @@ app.post('/api/orders', async (req, res) => {
       
       // Send real email notification (runs in background)
       sendRealMail(newOrder.customer.email, `Order Confirmation - Missara #${newOrder.orderId}`, generateOrderConfirmationHTML(newOrder));
+      
+      // Send admin alert email
+      if (process.env.SMTP_USER) {
+        sendRealMail(process.env.SMTP_USER, `New Order Received! 🛍️ #${newOrder.orderId}`, generateAdminOrderAlertHTML(newOrder));
+      }
       
       res.status(201).json(newOrder);
     }
