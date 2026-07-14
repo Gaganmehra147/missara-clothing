@@ -288,6 +288,28 @@ function generateOrderDeliveredHTML(order) {
   `;
 }
 
+function generateWelcomeEmailHTML(name) {
+  const domainUrl = process.env.DOMAIN_URL || 'https://missaraclothing.com';
+  return `
+    ${getEmailHeader('Welcome to Missara Family 🌸')}
+    <h3>Hello ${name},</h3>
+    <p>Welcome to Missara Clothing! We are absolutely thrilled to have you join our family of premium ethnic fashion lovers.</p>
+    
+    <p>At Missara, we curate and ethically tailor exquisite pastel kurtas, suit sets, designer sarees, and bridal lehengas. Every piece is handcrafted in Jabalpur to celebrate elegance, comfort, and style.</p>
+    
+    <div class="order-card" style="text-align: center; padding: 25px;">
+      <h3 style="margin-top: 0; color: #b5838d; font-family: 'Georgia', serif;">Explore Our Collection</h3>
+      <p style="font-size: 14px; margin-bottom: 20px; color: #7a6e6e;">Use code <b>WELCOME10</b> at checkout to get an instant 10% discount on your very first order!</p>
+      <a href="${domainUrl}/shop.html" class="btn" style="color: #ffffff; text-decoration: none;">Start Shopping Now</a>
+    </div>
+    
+    <p>If you ever have any questions about sizes, fabric care, or custom tailoring, feel free to reply to this email. We are always here to help you shine.</p>
+    
+    <p>Warmest regards,<br>Team Missara Clothing</p>
+    ${getEmailFooter()}
+  `;
+}
+
 // Razorpay will be initialized dynamically per request using database settings
 
 // Middleware
@@ -428,6 +450,10 @@ app.post('/api/auth/register', async (req, res) => {
     }
 
     const token = jwt.sign({ id: savedUser._id || savedUser.id }, JWT_SECRET, { expiresIn: '7d' });
+    
+    // Trigger welcome registration email in the background
+    sendRealMail(savedUser.email, 'Welcome to the Missara Family! 🌸', generateWelcomeEmailHTML(savedUser.name));
+
     res.status(201).json({ success: true, token, user: { name: savedUser.name, email: savedUser.email } });
   } catch (error) {
     console.error('Registration error:', error);
