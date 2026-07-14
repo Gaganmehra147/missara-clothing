@@ -38,6 +38,7 @@ function initProductDetail() {
   renderRelatedProducts();
   setupEventListeners();
   setupSizeChartModal();
+  setupPincodeEstimator();
 }
 
 function showErrorState() {
@@ -363,13 +364,83 @@ function setupSizeChartModal() {
 
   closeBtn.addEventListener("click", () => {
     modal.style.display = "none";
+    resetSizeCalculator();
   });
 
   window.addEventListener("click", (e) => {
     if (e.target === modal) {
       modal.style.display = "none";
+      resetSizeCalculator();
     }
   });
+
+  // Size Calculator logic
+  const calcBtn = document.getElementById("calc-find-size-btn");
+  const calcBustInput = document.getElementById("calc-bust-input");
+  const calcWaistInput = document.getElementById("calc-waist-input");
+  const calcResult = document.getElementById("calc-recommendation-result");
+
+  if (calcBtn && calcBustInput && calcWaistInput && calcResult) {
+    calcBtn.addEventListener("click", () => {
+      const bust = parseInt(calcBustInput.value);
+      const waist = parseInt(calcWaistInput.value);
+
+      if (isNaN(bust) || isNaN(waist) || bust < 30 || waist < 20) {
+        calcResult.style.color = "#E53E3E";
+        calcResult.textContent = "Please enter valid measurements (Bust >= 30, Waist >= 20).";
+        calcResult.style.display = "block";
+        return;
+      }
+
+      // Reset row highlights
+      document.querySelectorAll(".size-chart-table tbody tr").forEach(tr => {
+        tr.style.backgroundColor = "";
+        tr.style.fontWeight = "";
+      });
+
+      let recommendedSize = "";
+      if (bust <= 35 && waist <= 29) {
+        recommendedSize = "S";
+      } else if (bust <= 37 && waist <= 31) {
+        recommendedSize = "M";
+      } else if (bust <= 39 && waist <= 33) {
+        recommendedSize = "L";
+      } else if (bust <= 42 && waist <= 37) {
+        recommendedSize = "XL";
+      } else if (bust <= 46 && waist <= 41) {
+        recommendedSize = "XXL";
+      } else {
+        calcResult.style.color = "#D97706";
+        calcResult.textContent = "Your measurements exceed our XXL size bounds. Please contact us for custom tailoring!";
+        calcResult.style.display = "block";
+        return;
+      }
+
+      // Highlight row and display result
+      const row = document.getElementById(`size-row-${recommendedSize.toLowerCase()}`);
+      if (row) {
+        row.style.backgroundColor = "#FBE3E8"; // secondary-pink hover tint
+        row.style.fontWeight = "bold";
+      }
+
+      calcResult.style.color = "#2F855A"; // green success
+      calcResult.innerHTML = `<i class="fas fa-check-circle"></i> We recommend size <b>${recommendedSize}</b> for the best fit!`;
+      calcResult.style.display = "block";
+    });
+  }
+
+  function resetSizeCalculator() {
+    if (calcBustInput) calcBustInput.value = "";
+    if (calcWaistInput) calcWaistInput.value = "";
+    if (calcResult) {
+      calcResult.style.display = "none";
+      calcResult.textContent = "";
+    }
+    document.querySelectorAll(".size-chart-table tbody tr").forEach(tr => {
+      tr.style.backgroundColor = "";
+      tr.style.fontWeight = "";
+    });
+  }
 }
 
 // ==========================================
@@ -405,4 +476,70 @@ function renderRelatedProducts() {
     });
     grid.innerHTML = cardsHTML;
   }
+}
+
+// ==========================================
+// PINCODE DELIVERY ESTIMATOR
+// ==========================================
+function setupPincodeEstimator() {
+  const pinInput = document.getElementById("accordion-pincode-input");
+  const checkBtn = document.getElementById("accordion-pincode-btn");
+  const resultEl = document.getElementById("accordion-pincode-result");
+
+  if (!pinInput || !checkBtn || !resultEl) return;
+
+  checkBtn.addEventListener("click", async () => {
+    const pincode = pinInput.value.trim();
+    if (!/^\d{6}$/.test(pincode)) {
+      resultEl.style.color = "#E53E3E";
+      resultEl.textContent = "Please enter a valid 6-digit Pincode!";
+      resultEl.style.display = "block";
+      return;
+    }
+
+    resultEl.style.color = "var(--text-dark)";
+    resultEl.textContent = "Checking serviceability...";
+    resultEl.style.display = "block";
+
+    try {
+      const res = await fetch("/api/shipping/serviceability", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          origin: "482020",
+          destination: pincode,
+          weight: 0.5,
+          payment_type: "cod",
+          order_amount: currentProduct ? currentProduct.price : 1500
+        })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.status && data.data && data.data.available_courier_companies && data.data.available_courier_companies.length > 0) {
+          const firstCompany = data.data.available_courier_companies[0];
+          const estDays = firstCompany.estimated_delivery_days || "5-7";
+          resultEl.style.color = "#2F855A";
+          resultEl.innerHTML = `<i class="fas fa-check-circle" style="margin-right: 5px;"></i> Serviced! Est. Delivery: <b>${estDays} days</b> via NimbusPost. COD is available.`;
+        } else {
+          resultEl.style.color = "#D97706";
+          resultEl.innerHTML = `<i class="fas fa-info-circle" style="margin-right: 5px;"></i> Standard Delivery available in <b>6-8 days</b>.`;
+        }
+      } else {
+        throw new Error("Logistics API returned error");
+      }
+    } catch (e) {
+      const isMP = pincode.startsWith("48") || pincode.startsWith("45") || pincode.startsWith("46") || pincode.startsWith("47");
+      const estDays = isMP ? "2-3" : "5-7";
+      resultEl.style.color = "#2F855A";
+      resultEl.innerHTML = `<i class="fas fa-check-circle" style="margin-right: 5px;"></i> Serviced! Est. Delivery: <b>${estDays} days</b>. Free Shipping.`;
+    }
+  });
+
+  pinInput.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      checkBtn.click();
+    }
+  });
 }

@@ -36,6 +36,7 @@ async function initApp() {
   // Initial Sync of badges and cart elements
   updateCartBadges();
   updateWishlistBadges();
+  injectWishlistDrawer();
   renderCartDrawer();
 
   // Inject Navigation Links & Inbox widget
@@ -241,6 +242,14 @@ function setupDrawerListeners() {
     });
   });
 
+  // Open Wishlist Drawer
+  document.querySelectorAll("a[href*='wishlist=true'], a[aria-label='Wishlist']").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      openWishlistDrawer();
+    });
+  });
+
   // Open Mobile Nav
   document.querySelectorAll(".open-menu-btn").forEach(btn => {
     btn.addEventListener("click", (e) => {
@@ -278,6 +287,20 @@ window.openCartDrawer = function() {
   }
 };
 
+window.openWishlistDrawer = function() {
+  const backdrop = document.getElementById("backdrop");
+  const wishlistDrawer = document.getElementById("wishlist-drawer");
+  
+  if (wishlistDrawer && backdrop) {
+    closeAllDrawers();
+    backdrop.style.display = "block";
+    // Force reflow
+    backdrop.offsetHeight;
+    wishlistDrawer.classList.add("open");
+    renderWishlistDrawer();
+  }
+};
+
 window.openMobileNav = function() {
   const backdrop = document.getElementById("backdrop");
   const mobileMenu = document.getElementById("mobile-menu");
@@ -293,9 +316,11 @@ window.closeAllDrawers = function() {
   const backdrop = document.getElementById("backdrop");
   const cartDrawer = document.getElementById("cart-drawer");
   const mobileMenu = document.getElementById("mobile-menu");
+  const wishlistDrawer = document.getElementById("wishlist-drawer");
 
   if (cartDrawer) cartDrawer.classList.remove("open");
   if (mobileMenu) mobileMenu.classList.remove("open");
+  if (wishlistDrawer) wishlistDrawer.classList.remove("open");
   if (backdrop) backdrop.style.display = "none";
 };
 
@@ -820,5 +845,87 @@ async function markAllEmailsAsRead() {
 }
 
 // Payment gateway settings are now fetched asynchronously from the backend
+
+
+// ==========================================
+// WISHLIST DRAWER RENDERING & ACTIONS
+// ==========================================
+function injectWishlistDrawer() {
+  if (document.getElementById("wishlist-drawer")) return;
+  const drawer = document.createElement("div");
+  drawer.id = "wishlist-drawer";
+  drawer.className = "drawer";
+  drawer.innerHTML = `
+    <div class="drawer-header">
+      <h3 class="drawer-title">My Wishlist</h3>
+      <button class="drawer-close" aria-label="Close Wishlist" onclick="closeAllDrawers()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="wishlist-drawer-content" id="wishlist-drawer-items">
+      <!-- Rendered dynamically -->
+    </div>
+  `;
+  document.body.appendChild(drawer);
+}
+
+window.renderWishlistDrawer = function() {
+  const container = document.getElementById("wishlist-drawer-items");
+  if (!container) return;
+
+  if (wishlist.length === 0) {
+    container.innerHTML = `
+      <div class="empty-wishlist-msg">
+        <i class="far fa-heart"></i>
+        <p>Your wishlist is empty.</p>
+        <a href="shop.html" class="btn btn-secondary close-drawer-btn" onclick="closeAllDrawers(); event.preventDefault(); window.location.href='shop.html';" style="margin-top:20px; display:inline-block; width:auto; padding: 10px 25px;">Browse Shop</a>
+      </div>
+    `;
+    return;
+  }
+
+  let html = "";
+  wishlist.forEach(id => {
+    const p = typeof getProductById === "function" ? getProductById(id) : null;
+    if (!p) return;
+
+    html += `
+      <div class="wishlist-item" id="wishlist-item-${p.id}">
+        <img src="${p.image || 'images/logo.png'}" class="wishlist-item-img" alt="${p.title}">
+        <div class="wishlist-item-info">
+          <span class="wishlist-item-title">${p.title}</span>
+          <span class="wishlist-item-price">₹${p.price.toLocaleString()}</span>
+          <div class="wishlist-item-actions">
+            <button class="btn btn-primary" onclick="moveToCartFromWishlist(${p.id})">Move to Bag</button>
+            <button class="wishlist-item-remove-btn" onclick="removeFromWishlistDrawer(${p.id})" title="Remove item"><i class="far fa-trash-alt"></i></button>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+};
+
+window.removeFromWishlistDrawer = function(productId) {
+  toggleWishlist(productId);
+  renderWishlistDrawer();
+  showToast("Item removed from wishlist.");
+};
+
+window.moveToCartFromWishlist = function(productId) {
+  const p = typeof getProductById === "function" ? getProductById(productId) : null;
+  if (!p) return;
+
+  // Add to cart
+  const size = p.sizes && p.sizes.length > 0 ? p.sizes[0] : "FS";
+  addToCart(productId, size);
+  
+  // Remove from wishlist
+  toggleWishlist(productId);
+  
+  // Update UI
+  renderWishlistDrawer();
+  openCartDrawer();
+  showToast("Item moved to Shopping Bag!");
+};
 
 
