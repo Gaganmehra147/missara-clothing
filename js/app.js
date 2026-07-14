@@ -731,8 +731,16 @@ window.updateInboxBadge = async function() {
   const countEl = document.getElementById("missara-inbox-count");
   if (!countEl) return;
 
+  const token = localStorage.getItem("missara_token");
+  if (!token) {
+    countEl.style.display = "none";
+    return;
+  }
+
   try {
-    const res = await fetch('/api/emails/customer/all');
+    const res = await fetch('/api/emails/customer/all', {
+      headers: { 'Authorization': token }
+    });
     if (!res.ok) return;
     const emails = await res.json();
     const unread = emails.filter(e => !e.read).length;
@@ -757,8 +765,20 @@ window.renderInboxMessages = async function() {
   const listEl = document.getElementById("missara-inbox-list");
   if (!listEl) return;
 
+  const token = localStorage.getItem("missara_token");
+  if (!token) {
+    listEl.innerHTML = `
+      <div style="text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 0.85rem;">
+        Please log in to view your mailbox simulation.
+      </div>
+    `;
+    return;
+  }
+
   try {
-    const res = await fetch('/api/emails/customer/all');
+    const res = await fetch('/api/emails/customer/all', {
+      headers: { 'Authorization': token }
+    });
     if (!res.ok) return;
     const emails = await res.json();
 
@@ -797,7 +817,15 @@ window.renderInboxMessages = async function() {
 
 window.viewInboxEmail = async function(emailId) {
   try {
-    const res = await fetch(`/api/emails/${emailId}/read`, { method: 'PUT' });
+    const token = localStorage.getItem("missara_token");
+    const headers = {};
+    if (token) {
+      headers['Authorization'] = token;
+    }
+    const res = await fetch(`/api/emails/${emailId}/read`, { 
+      method: 'PUT',
+      headers: headers
+    });
     if (!res.ok) return;
     const email = await res.json();
     
@@ -829,13 +857,21 @@ window.viewInboxEmail = async function(emailId) {
 
 async function markAllEmailsAsRead() {
   try {
-    const res = await fetch('/api/emails/customer/all');
+    const token = localStorage.getItem("missara_token");
+    if (!token) return;
+
+    const res = await fetch('/api/emails/customer/all', {
+      headers: { 'Authorization': token }
+    });
     if (!res.ok) return;
     const emails = await res.json();
     const unread = emails.filter(e => !e.read);
     
     await Promise.all(unread.map(e => 
-      fetch(`/api/emails/${e.id}/read`, { method: 'PUT' })
+      fetch(`/api/emails/${e.id}/read`, { 
+        method: 'PUT',
+        headers: { 'Authorization': token }
+      })
     ));
     
     updateInboxBadge();

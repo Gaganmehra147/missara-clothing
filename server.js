@@ -1364,10 +1364,28 @@ app.get('/api/emails', validateAdminPIN, async (req, res) => {
   }
 });
 
-// Mark email as read (Admin only)
-app.put('/api/emails/:id/read', validateAdminPIN, async (req, res) => {
+// Mark email as read (Allows Admin PIN or customer JWT auth)
+app.put('/api/emails/:id/read', async (req, res) => {
   try {
     const emailId = parseInt(req.params.id);
+    
+    // Check authorization: Admin PIN or Customer JWT
+    const pin = req.headers['x-admin-pin'];
+    const expectedPin = process.env.ADMIN_PIN || '1234';
+    const authHeader = req.headers['authorization'];
+    
+    let isAuthorized = (pin === expectedPin);
+    
+    if (!isAuthorized && authHeader) {
+      try {
+        jwt.verify(authHeader, JWT_SECRET);
+        isAuthorized = true;
+      } catch (err) {}
+    }
+    
+    if (!isAuthorized) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
     
     if (isMongoDBActive) {
       const email = await Email.findOneAndUpdate({ id: emailId }, { read: true }, { new: true });
