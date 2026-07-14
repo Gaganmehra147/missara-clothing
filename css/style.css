@@ -306,7 +306,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* Responsive constraints to keep elements aligned */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .menu-toggle-btn .btn-text,
   .search-toggle-btn .btn-text,
   .contact-link {
@@ -317,6 +317,18 @@ h1, h2, h3, h4, h5, h6 {
   }
   .header-right {
     gap: 12px;
+  }
+  .header-logo-img {
+    display: none;
+  }
+  .logo a {
+    font-size: 1.6rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .logo a {
+    font-size: 1.4rem;
   }
 }
 

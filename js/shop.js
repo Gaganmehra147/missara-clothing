@@ -691,6 +691,26 @@ function renderPagination(totalCount) {
   }
 }
 
+// Helper for HTML escaping to prevent XSS
+function escapeHTML(str) {
+  if (!str) return "";
+  return str.toString()
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+// Helper for escaping strings inside inline JS event attributes to prevent syntax errors and injection
+function escapeJSString(str) {
+  if (!str) return "";
+  return str.toString()
+    .replace(/\\/g, "\\\\")
+    .replace(/'/g, "\\'")
+    .replace(/"/g, '\\"');
+}
+
 // ==========================================
 // RENDER ACTIVE FILTER BADGES ROW
 // ==========================================
@@ -706,14 +726,14 @@ function renderActiveFilterBadges() {
     hasFilters = true;
     badgesHTML += `
       <span class="active-filter-badge">
-        ${label} <i class="fas fa-times" onclick="${removeFnCall}"></i>
+        ${escapeHTML(label)} <i class="fas fa-times" onclick="${escapeHTML(removeFnCall)}"></i>
       </span>
     `;
   };
 
   // Categories
   filters.categories.forEach(cat => {
-    addBadge(cat, `removeFilterValue('categories', '${cat}')`);
+    addBadge(cat, `removeFilterValue('categories', '${escapeJSString(cat)}')`);
   });
 
   // Price range
@@ -729,42 +749,42 @@ function renderActiveFilterBadges() {
 
   // Sizes
   filters.sizes.forEach(size => {
-    addBadge(`Size: ${size}`, `removeFilterValue('sizes', '${size}')`);
+    addBadge(`Size: ${size}`, `removeFilterValue('sizes', '${escapeJSString(size)}')`);
   });
 
   // Colors
   filters.colors.forEach(color => {
-    addBadge(`Color: ${color}`, `removeFilterValue('colors', '${color}')`);
+    addBadge(`Color: ${color}`, `removeFilterValue('colors', '${escapeJSString(color)}')`);
   });
 
   // Fabrics
   filters.fabrics.forEach(fab => {
-    addBadge(`Fabric: ${fab}`, `removeFilterValue('fabrics', '${fab}')`);
+    addBadge(`Fabric: ${fab}`, `removeFilterValue('fabrics', '${escapeJSString(fab)}')`);
   });
 
   // Occasions
   filters.occasions.forEach(occ => {
-    addBadge(`Occasion: ${occ}`, `removeFilterValue('occasions', '${occ}')`);
+    addBadge(`Occasion: ${occ}`, `removeFilterValue('occasions', '${escapeJSString(occ)}')`);
   });
 
   // Patterns
   filters.patterns.forEach(pat => {
-    addBadge(`Pattern: ${pat}`, `removeFilterValue('patterns', '${pat}')`);
+    addBadge(`Pattern: ${pat}`, `removeFilterValue('patterns', '${escapeJSString(pat)}')`);
   });
 
   // Styles
   filters.styles.forEach(style => {
-    addBadge(`Style: ${style}`, `removeFilterValue('styles', '${style}')`);
+    addBadge(`Style: ${style}`, `removeFilterValue('styles', '${escapeJSString(style)}')`);
   });
 
   // Sleeves
   filters.sleeves.forEach(sl => {
-    addBadge(`Sleeves: ${sl}`, `removeFilterValue('sleeves', '${sl}')`);
+    addBadge(`Sleeves: ${sl}`, `removeFilterValue('sleeves', '${escapeJSString(sl)}')`);
   });
 
   // Necks
   filters.necks.forEach(n => {
-    addBadge(`Neck: ${n}`, `removeFilterValue('necks', '${n}')`);
+    addBadge(`Neck: ${n}`, `removeFilterValue('necks', '${escapeJSString(n)}')`);
   });
 
   // Search

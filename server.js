@@ -90,7 +90,18 @@ function initializeMailTransporter() {
     });
     console.log('====================================================');
     console.log('Nodemailer SMTP Transporter configured successfully.');
+    console.log(`SMTP Settings - Host: ${process.env.SMTP_HOST}, Port: ${process.env.SMTP_PORT}`);
     console.log('====================================================');
+    
+    // Connection verification check to assist with Hostinger connection debugging
+    mailTransporter.verify(function (error, success) {
+      if (error) {
+        console.error('SMTP Connection Verification FAILED:', error.message);
+        console.error('This may be due to Hostinger blocking outbound SMTP ports (587/465), or invalid credentials/SSL settings.');
+      } else {
+        console.log('SMTP Server connection verified successfully! Live email delivery is ready.');
+      }
+    });
   } catch (err) {
     console.error('Nodemailer initialization failed:', err.message);
   }
