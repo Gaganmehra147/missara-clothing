@@ -1221,8 +1221,8 @@ async function printShippingLabel(orderId) {
 // ==========================================
 async function loadPaymentSettingsForm() {
   let settings = {
-    mode: "test",
-    keyId: "rzp_test_MissaraDemoKey123",
+    mode: "live",
+    keyId: "rzp_live_T6hbbverISo2yt",
     keySecret: "",
     merchantName: "Missara Clothing",
     enableRazorpay: true,

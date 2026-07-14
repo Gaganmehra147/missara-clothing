@@ -1040,7 +1040,7 @@ app.post('/api/pay/create-order', async (req, res) => {
     } else {
       res.json({
         sandbox: true,
-        keyId: keyId || 'rzp_test_MissaraDemoKey123',
+        keyId: keyId || 'rzp_live_T6hbbverISo2yt',
         id: `order_mock_${Math.floor(100000000000 + Math.random() * 900000000000)}`,
         amount: Math.round(amount * 100),
         currency: "INR"

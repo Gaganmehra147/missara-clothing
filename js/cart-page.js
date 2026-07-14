@@ -435,7 +435,7 @@ function setupCheckoutListeners() {
 // RAZORPAY PAYMENT GATEWAY INTEGRATION
 // ==========================================
 async function openPaymentGateway(orderData) {
-  let settings = { keyId: "rzp_test_MissaraDemoKey123", merchantName: "Missara Clothing" };
+  let settings = { keyId: "rzp_live_T6hbbverISo2yt", merchantName: "Missara Clothing" };
   try {
     const resSettings = await fetch('/api/settings/payment');
     if (resSettings.ok) settings = await resSettings.json();
