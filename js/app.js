@@ -740,26 +740,6 @@ async function markAllEmailsAsRead() {
   }
 }
 
-// ==========================================
-// PAYMENT GATEWAY GLOBAL SETTINGS
-// ==========================================
-window.getPaymentSettings = function() {
-  const defaultSettings = {
-    mode: "test",
-    keyId: "rzp_test_MissaraDemoKey123",
-    keySecret: "",
-    merchantName: "Missara Clothing",
-    enableRazorpay: true,
-    enableCod: true
-  };
-  try {
-    const stored = localStorage.getItem("missara_payment_settings");
-    if (stored) {
-      return { ...defaultSettings, ...JSON.parse(stored) };
-    }
-  } catch (e) {
-    console.error("Error loading payment settings", e);
-  }
-  return defaultSettings;
-};
+// Payment gateway settings are now fetched asynchronously from the backend
+
 

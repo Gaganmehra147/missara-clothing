@@ -287,16 +287,7 @@ function generateOrderDeliveredHTML(order) {
   `;
 }
 
-// Initialize Razorpay SDK
-let razorpay;
-try {
-  razorpay = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_MissaraDemoKey123',
-    key_secret: process.env.RAZORPAY_KEY_SECRET || ''
-  });
-} catch (e) {
-  console.error("Razorpay SDK initialization failed, payment creation will run in sandbox mode.", e.message);
-}
+// Razorpay will be initialized dynamically per request using database settings
 
 // Middleware
 app.use(cors());
@@ -990,6 +981,31 @@ app.put('/api/orders/:id/status', validateAdminPIN, async (req, res) => {
 });
 
 // ==========================================
+// SETTINGS API ENDPOINTS
+// ==========================================
+
+// Get payment settings
+app.get('/api/settings/payment', (req, res) => {
+  try {
+    const settings = db.getSettings();
+    res.json(settings);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Update payment settings (requires admin pin)
+app.post('/api/settings/payment', validateAdminPIN, (req, res) => {
+  try {
+    const newSettings = req.body;
+    const settings = db.saveSettings(newSettings);
+    res.json({ success: true, settings });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ==========================================
 // RAZORPAY PAYMENT API ENDPOINTS
 // ==========================================
 
@@ -997,18 +1013,26 @@ app.put('/api/orders/:id/status', validateAdminPIN, async (req, res) => {
 app.post('/api/pay/create-order', async (req, res) => {
   try {
     const { amount, orderId } = req.body;
+    const settings = db.getSettings();
+    const keyId = settings.keyId || process.env.RAZORPAY_KEY_ID;
+    const keySecret = settings.keySecret || process.env.RAZORPAY_KEY_SECRET;
     
-    if (process.env.RAZORPAY_KEY_SECRET && process.env.RAZORPAY_KEY_SECRET.trim() !== "") {
+    if (keySecret && keySecret.trim() !== "") {
       const options = {
         amount: Math.round(amount * 100),
         currency: "INR",
         receipt: orderId
       };
       
+      const razorpay = new Razorpay({
+        key_id: keyId,
+        key_secret: keySecret
+      });
+      
       const order = await razorpay.orders.create(options);
       res.json({
         sandbox: false,
-        keyId: process.env.RAZORPAY_KEY_ID,
+        keyId: keyId,
         id: order.id,
         amount: order.amount,
         currency: order.currency
@@ -1016,7 +1040,7 @@ app.post('/api/pay/create-order', async (req, res) => {
     } else {
       res.json({
         sandbox: true,
-        keyId: process.env.RAZORPAY_KEY_ID || 'rzp_test_MissaraDemoKey123',
+        keyId: keyId || 'rzp_test_MissaraDemoKey123',
         id: `order_mock_${Math.floor(100000000000 + Math.random() * 900000000000)}`,
         amount: Math.round(amount * 100),
         currency: "INR"
@@ -1031,11 +1055,13 @@ app.post('/api/pay/create-order', async (req, res) => {
 app.post('/api/pay/verify', (req, res) => {
   try {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+    const settings = db.getSettings();
+    const keySecret = settings.keySecret || process.env.RAZORPAY_KEY_SECRET;
     
-    if (process.env.RAZORPAY_KEY_SECRET && process.env.RAZORPAY_KEY_SECRET.trim() !== "") {
+    if (keySecret && keySecret.trim() !== "") {
       const text = razorpay_order_id + "|" + razorpay_payment_id;
       const generated_signature = crypto
-        .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+        .createHmac('sha256', keySecret)
         .update(text)
         .digest('hex');
         

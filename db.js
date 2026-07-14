@@ -244,7 +244,8 @@ function readDB() {
       products: DEFAULT_PRODUCTS,
       orders: [],
       emails: [],
-      users: []
+      users: [],
+      settings: {}
     };
     writeDB(initialData);
     return initialData;
@@ -252,14 +253,20 @@ function readDB() {
   
   try {
     const rawData = fs.readFileSync(dbFilePath, 'utf8');
-    return JSON.parse(rawData);
+    const data = JSON.parse(rawData);
+    if (!data.settings) {
+      data.settings = {};
+      writeDB(data);
+    }
+    return data;
   } catch (e) {
     console.error('Error reading database file, resetting...', e);
     const initialData = {
       products: DEFAULT_PRODUCTS,
       orders: [],
       emails: [],
-      users: []
+      users: [],
+      settings: {}
     };
     writeDB(initialData);
     return initialData;
@@ -315,5 +322,14 @@ module.exports = {
     const db = readDB();
     db.reviews = reviews;
     writeDB(db);
+  },
+  getSettings: () => {
+    return readDB().settings || {};
+  },
+  saveSettings: (settings) => {
+    const db = readDB();
+    db.settings = settings;
+    writeDB(db);
+    return db.settings;
   }
 };

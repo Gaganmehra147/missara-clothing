@@ -317,8 +317,23 @@ function renderImagePreviews() {
   if (!grid) return;
 
   if (selectedImageFiles.length === 0) {
-    grid.innerHTML = "";
-    if (countInfo) countInfo.textContent = "";
+    if (editingProductId && window.existingImagesBase64 && window.existingImagesBase64.length > 0) {
+      // Show existing images if editing and no new files uploaded yet
+      let html = "";
+      window.existingImagesBase64.forEach((base64, index) => {
+        html += `
+          <div class="image-preview-item">
+            <img src="${base64}" alt="Existing Preview ${index + 1}">
+            ${index === 0 ? '<span class="preview-main-badge">Main</span>' : ''}
+          </div>
+        `;
+      });
+      grid.innerHTML = html;
+      if (countInfo) countInfo.textContent = `${window.existingImagesBase64.length} existing image(s) shown (uploading new files will replace them)`;
+    } else {
+      grid.innerHTML = "";
+      if (countInfo) countInfo.textContent = "";
+    }
     return;
   }
 
@@ -1204,8 +1219,8 @@ async function printShippingLabel(orderId) {
 // ==========================================
 // PAYMENT GATEWAY SETTINGS MANAGEMENT
 // ==========================================
-function loadPaymentSettingsForm() {
-  const settings = typeof window.getPaymentSettings === "function" ? window.getPaymentSettings() : {
+async function loadPaymentSettingsForm() {
+  let settings = {
     mode: "test",
     keyId: "rzp_test_MissaraDemoKey123",
     keySecret: "",
@@ -1214,6 +1229,16 @@ function loadPaymentSettingsForm() {
     enableCod: true
   };
   
+  try {
+    const res = await fetch('/api/settings/payment');
+    if (res.ok) {
+      const dbSettings = await res.json();
+      settings = { ...settings, ...dbSettings };
+    }
+  } catch (err) {
+    console.error("Could not fetch settings from backend", err);
+  }
+  
   const modeEl = document.getElementById("razorpay-mode");
   const keyIdEl = document.getElementById("razorpay-key-id");
   const keySecretEl = document.getElementById("razorpay-key-secret");
@@ -1221,19 +1246,19 @@ function loadPaymentSettingsForm() {
   const enableRazorpayEl = document.getElementById("pref-enable-razorpay");
   const enableCodEl = document.getElementById("pref-enable-cod");
 
-  if (modeEl) modeEl.value = settings.mode;
-  if (keyIdEl) keyIdEl.value = settings.keyId;
-  if (keySecretEl) keySecretEl.value = settings.keySecret;
-  if (merchantNameEl) merchantNameEl.value = settings.merchantName;
-  if (enableRazorpayEl) enableRazorpayEl.checked = settings.enableRazorpay;
-  if (enableCodEl) enableCodEl.checked = settings.enableCod;
+  if (modeEl) modeEl.value = settings.mode || "test";
+  if (keyIdEl) keyIdEl.value = settings.keyId || "";
+  if (keySecretEl) keySecretEl.value = settings.keySecret || "";
+  if (merchantNameEl) merchantNameEl.value = settings.merchantName || "";
+  if (enableRazorpayEl) enableRazorpayEl.checked = settings.enableRazorpay !== false;
+  if (enableCodEl) enableCodEl.checked = settings.enableCod !== false;
 }
 
 function setupPaymentSettingsHandler() {
   const form = document.getElementById("admin-payment-settings-form");
   if (!form) return;
 
-  form.addEventListener("submit", (e) => {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const settings = {
       mode: document.getElementById("razorpay-mode").value,
@@ -1244,7 +1269,27 @@ function setupPaymentSettingsHandler() {
       enableCod: document.getElementById("pref-enable-cod").checked
     };
 
-    localStorage.setItem("missara_payment_settings", JSON.stringify(settings));
-    showToast("Payment Gateway Settings Saved!");
+    const adminPin = localStorage.getItem("missara_admin_pin");
+    
+    try {
+      const res = await fetch('/api/settings/payment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-pin': adminPin
+        },
+        body: JSON.stringify(settings)
+      });
+      
+      if (res.ok) {
+        showToast("Payment Gateway Settings Saved to Database!");
+      } else {
+        const error = await res.json();
+        showToast("Error saving settings: " + (error.error || "Unauthorized"), "error");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Error saving settings to server", "error");
+    }
   });
 }

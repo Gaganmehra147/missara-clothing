@@ -435,7 +435,13 @@ function setupCheckoutListeners() {
 // RAZORPAY PAYMENT GATEWAY INTEGRATION
 // ==========================================
 async function openPaymentGateway(orderData) {
-  const settings = typeof window.getPaymentSettings === "function" ? window.getPaymentSettings() : { keyId: "rzp_test_MissaraDemoKey123", merchantName: "Missara Clothing" };
+  let settings = { keyId: "rzp_test_MissaraDemoKey123", merchantName: "Missara Clothing" };
+  try {
+    const resSettings = await fetch('/api/settings/payment');
+    if (resSettings.ok) settings = await resSettings.json();
+  } catch (e) {
+    console.error("Could not load settings", e);
+  }
   
   try {
     const res = await fetch('/api/pay/create-order', {
@@ -554,8 +560,14 @@ function openMockRazorpayGateway(orderData, settings) {
   };
 }
 
-function setupPaymentOptionsVisibility() {
-  const settings = typeof window.getPaymentSettings === "function" ? window.getPaymentSettings() : { enableRazorpay: true, enableCod: true };
+async function setupPaymentOptionsVisibility() {
+  let settings = { enableRazorpay: true, enableCod: true };
+  try {
+    const resSettings = await fetch('/api/settings/payment');
+    if (resSettings.ok) settings = await resSettings.json();
+  } catch (e) {
+    console.error("Could not load settings", e);
+  }
   const rzpCard = document.getElementById("option-razorpay-card");
   const codCard = document.getElementById("option-cod-card");
   
