@@ -697,6 +697,7 @@ async function completeCheckoutOrder(orderData) {
     },
     items: cart.map(item => ({
       id: item.id,
+      sku: item.sku || "",
       title: item.title,
       price: item.price,
       image: item.image,

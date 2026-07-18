@@ -41,8 +41,9 @@ async function initApp() {
 
   // Inject Navigation Links & Inbox widget
   injectNavigationLinks();
-  initInboxSimulator();
+  // initInboxSimulator();
   setupAuthState();
+  injectMobileBottomNav();
 }
 
 
@@ -142,6 +143,7 @@ window.addToCart = function(productId, size, quantity = 1) {
   } else {
     cart.push({
       id: product.id,
+      sku: product.sku || "",
       title: product.title,
       price: product.price,
       image: product.image,
@@ -554,25 +556,34 @@ window.createProductCardHTML = function(product) {
 
   return `
     <div class="product-card ${isOutOfStock ? 'out-of-stock' : ''}">
-      ${product.tag ? `<span class="product-badge">${product.tag}</span>` : ""}
-      ${isOutOfStock ? `<span class="out-of-stock-badge">Out of Stock</span>` : ""}
-      <button class="product-wishlist-btn wishlist-btn-${product.id} ${isWishlisted ? 'active' : ''}" onclick="toggleWishlist(${product.id})">
-        <i class="${isWishlisted ? 'fas' : 'far'} fa-heart"></i>
-      </button>
-      <a href="product.html?id=${product.id}">
-        <div class="product-img-wrapper">
-          <img class="product-main-img" src="${product.image}" alt="${product.title}">
-          <img class="product-hover-img" src="${product.hoverImage || product.image}" alt="${product.title}">
-          ${!isOutOfStock ? `
-          <div class="product-size-overlay" onclick="event.preventDefault();">
-            <span class="size-overlay-title">Quick Add Size</span>
-            <div class="size-overlay-options">
-              ${sizesHTML}
+      <div class="product-img-container">
+        ${product.tag ? `<span class="product-badge">${product.tag}</span>` : ""}
+        ${isOutOfStock ? `<span class="out-of-stock-badge">Out of Stock</span>` : ""}
+        <button class="product-wishlist-btn wishlist-btn-${product.id} ${isWishlisted ? 'active' : ''}" onclick="toggleWishlist(${product.id})">
+          <i class="${isWishlisted ? 'fas' : 'far'} fa-heart"></i>
+        </button>
+        <a href="product.html?id=${product.id}">
+          <div class="product-img-wrapper">
+            <img class="product-main-img" src="${product.image}" alt="${product.title}">
+            <img class="product-hover-img" src="${product.hoverImage || product.image}" alt="${product.title}">
+            
+            <div class="product-image-rating">
+              <i class="fas fa-star"></i>
+              <span>${product.rating}</span>
+              <span class="rating-count">(${product.reviewsCount})</span>
             </div>
+
+            ${!isOutOfStock ? `
+            <div class="product-size-overlay" onclick="event.preventDefault();">
+              <span class="size-overlay-title">Quick Add Size</span>
+              <div class="size-overlay-options">
+                ${sizesHTML}
+              </div>
+            </div>
+            ` : ""}
           </div>
-          ` : ""}
-        </div>
-      </a>
+        </a>
+      </div>
       <div class="product-card-info">
         <div class="product-card-category">${product.category}</div>
         <a href="product.html?id=${product.id}" class="product-card-title">${product.title}</a>
@@ -586,6 +597,7 @@ window.createProductCardHTML = function(product) {
           <span class="price-original">₹${product.originalPrice.toLocaleString()}</span>
           <span class="price-discount">${discountPercent}% OFF</span>
         </div>
+        <div class="product-card-sizes">${product.sizes.join(" ")}</div>
       </div>
     </div>
   `;
@@ -963,5 +975,70 @@ window.moveToCartFromWishlist = function(productId) {
   openCartDrawer();
   showToast("Item moved to Shopping Bag!");
 };
+
+// ==========================================
+// MOBILE BOTTOM STICKY NAVIGATION INJECTION
+// ==========================================
+function injectMobileBottomNav() {
+  if (document.getElementById("mobile-bottom-nav")) return;
+  
+  const bottomNav = document.createElement("div");
+  bottomNav.id = "mobile-bottom-nav";
+  bottomNav.className = "mobile-bottom-nav";
+  
+  const path = window.location.pathname;
+  const search = window.location.search;
+  const isHome = path.endsWith("index.html") || path === "/" || path.endsWith("/");
+  const isNew = search.includes("tag=New%20Arrival") || search.includes("tag=New Arrival");
+  const isWishlist = search.includes("wishlist=true");
+  
+  // Resolve user account link dynamically based on login state
+  const token = localStorage.getItem('missara_token');
+  const userStr = localStorage.getItem('missara_user');
+  let accountHref = "login.html";
+  let accountLabel = "Account";
+  if (token && userStr) {
+    try {
+      const user = JSON.parse(userStr);
+      accountHref = "dashboard.html";
+      accountLabel = user.name ? user.name.split(' ')[0] : 'Account';
+    } catch(e) {}
+  }
+  
+  const isAccount = path.endsWith("admin.html") || path.endsWith(accountHref) || (accountHref === "dashboard.html" && path.endsWith("dashboard.html")) || (accountHref === "login.html" && path.endsWith("login.html"));
+  const isSale = path.endsWith("shop.html") && !isNew && !isWishlist;
+  
+  bottomNav.innerHTML = `
+    <a href="index.html" class="bottom-nav-item ${isHome ? "active" : ""}">
+      <i class="fas fa-home"></i>
+      <span class="bottom-nav-label">Home</span>
+    </a>
+    <a href="shop.html?tag=New%20Arrival" class="bottom-nav-item ${isNew ? "active" : ""}">
+      <i class="far fa-star"></i>
+      <span class="bottom-nav-label">New</span>
+    </a>
+    <a href="shop.html" class="bottom-nav-item ${isSale ? "active" : ""}">
+      <i class="fas fa-tags"></i>
+      <span class="bottom-nav-label">Sale</span>
+    </a>
+    <button onclick="openWishlistDrawer()" class="bottom-nav-item">
+      <div style="position: relative; display: inline-block;">
+        <i class="far fa-heart"></i>
+        <span class="icon-badge wishlist-count" style="display: none; top: -8px; right: -8px;">0</span>
+      </div>
+      <span class="bottom-nav-label">Wishlist</span>
+    </button>
+    <a href="${accountHref}" class="bottom-nav-item ${isAccount ? "active" : ""}">
+      <i class="far fa-user"></i>
+      <span class="bottom-nav-label">${accountLabel}</span>
+    </a>
+  `;
+  
+  document.body.appendChild(bottomNav);
+  
+  if (typeof updateWishlistBadges === "function") {
+    updateWishlistBadges();
+  }
+}
 
 

@@ -128,7 +128,39 @@ function setupFormHandler() {
 
     // Get input values
     const title = document.getElementById("prod-title").value.trim();
+    let sku = document.getElementById("prod-sku").value.trim();
     const category = document.getElementById("prod-category").value;
+
+    // Check SKU & Auto-generate if empty
+    if (!sku) {
+      const catMap = {
+        "Kurtas & Suits": "KRT",
+        "Sarees": "SAR",
+        "Lehengas": "LHG",
+        "Anarkalis": "ANR",
+        "Fusion Wear": "FSN",
+        "New Arrivals": "NEW",
+        "Plus Sizes": "PLS",
+        "Tunics & Tops": "TNP"
+      };
+      const code = catMap[category] || "GEN";
+      const randNum = Math.floor(1000 + Math.random() * 9000);
+      sku = `MSR-${code}-${randNum}`;
+    }
+
+    // Check for duplicate SKU in catalog
+    const duplicateSku = PRODUCTS.find(p => p.sku && p.sku.toLowerCase() === sku.toLowerCase() && p.id !== editingProductId);
+    if (duplicateSku) {
+      showToast(`SKU Error: A product with SKU "${sku}" already exists ("${duplicateSku.title}").`, "error");
+      return;
+    }
+
+    // Check for duplicate product title in the same category
+    const duplicateTitle = PRODUCTS.find(p => p.title.toLowerCase() === title.toLowerCase() && p.category === category && p.id !== editingProductId);
+    if (duplicateTitle) {
+      const proceed = confirm(`Warning: A product named "${title}" already exists in the "${category}" category. Do you want to add/save this anyway?`);
+      if (!proceed) return;
+    }
     const price = parseInt(document.getElementById("prod-price").value);
     const originalPrice = parseInt(document.getElementById("prod-original-price").value);
     const tag = document.getElementById("prod-tag").value;
@@ -186,6 +218,7 @@ function setupFormHandler() {
 
     // Build Product Object
     const newProduct = {
+      sku: sku,
       title: title,
       category: category,
       price: price,
@@ -393,7 +426,10 @@ function renderCatalogTable() {
         <td><img src="${p.image}" class="catalog-thumb" alt="${p.title}"></td>
         <td>
           <div style="font-weight:600; color:var(--text-dark);">${p.title}</div>
-          <div style="font-size:0.75rem; color:var(--text-muted);">ID: ${p.id}</div>
+          <div style="font-size:0.75rem; color:var(--text-muted); display: flex; gap: 8px;">
+            <span>ID: ${p.id}</span>
+            ${p.sku ? `<span style="font-weight:700; color:var(--primary-pink);">SKU: ${p.sku}</span>` : ''}
+          </div>
         </td>
         <td>${p.category}</td>
         <td>
@@ -520,6 +556,7 @@ window.editBoutiqueProduct = function(id) {
   
   // Populate form fields
   document.getElementById("prod-title").value = p.title || "";
+  document.getElementById("prod-sku").value = p.sku || "";
   document.getElementById("prod-category").value = p.category || "";
   document.getElementById("prod-price").value = p.price || "";
   document.getElementById("prod-original-price").value = p.originalPrice || "";
@@ -603,9 +640,12 @@ async function renderCRMOrdersTable() {
     let itemsHTML = "";
     order.items.forEach(item => {
       itemsHTML += `
-        <div style="font-size:0.85rem; margin-bottom: 4px; display:flex; align-items:center; gap: 8px;">
+        <div style="font-size:0.85rem; margin-bottom: 6px; display:flex; align-items:center; gap: 8px;">
           <img src="${item.image}" style="width: 25px; height: 35px; object-fit:cover; border-radius: 2px;" alt="${item.title}">
-          <span><b>${item.title}</b> (${item.size}) x ${item.quantity}</span>
+          <div style="display:flex; flex-direction:column;">
+            <span><b>${item.title}</b> (${item.size}) x ${item.quantity}</span>
+            ${item.sku ? `<span style="font-size:0.75rem; font-weight:700; color:var(--primary-pink); margin-top:2px;">SKU: ${item.sku}</span>` : ''}
+          </div>
         </div>
       `;
     });
@@ -833,6 +873,19 @@ async function saveOrderShipping(orderId, courier, awb, weight) {
       }
     }
 
+    // Map selected courier name to courier ID
+    const courierMap = {
+      "delhivery": 1,
+      "bluedart": 179,
+      "xpressbees": 3,
+      "dtdc": 1, // Fallback to Delhivery Air
+      "ecomexpress": 1,
+      "shadowfax": 1,
+      "indiapost": 1
+    };
+    const normalizedCourier = (courier || "").toLowerCase().replace(/\s+/g, '');
+    const selectedCourierId = courierMap[normalizedCourier] || 1;
+
     // Call Real NimbusPost Backend
     try {
       const nimbusPayload = {
@@ -843,6 +896,9 @@ async function saveOrderShipping(orderId, courier, awb, weight) {
         package_length: 10,
         package_width: 10,
         package_height: 10,
+        auto_ship: 0,
+        auto_pickup: 0,
+        courier_id: selectedCourierId,
         consignee: {
           name: `${order.customer.firstname} ${order.customer.lastname}`,
           phone: order.customer.phone,
@@ -858,7 +914,7 @@ async function saveOrderShipping(orderId, courier, awb, weight) {
           city: "Jabalpur",
           state: "Madhya Pradesh",
           pincode: "482001",
-          phone: "9999999999"
+          phone: "7692931715"
         },
         order_items: order.cart.map(item => ({
           name: item.title,

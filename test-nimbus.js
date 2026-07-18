@@ -12,50 +12,58 @@ async function testNimbus() {
     if (res.data && res.data.status) {
       console.log('Login Success! Token:', res.data.data.substring(0, 10) + '...');
       
-      // Test payload based on server.js
-      const orderPayload = {
-        order_number: 'MS-TEST-' + Date.now(),
-        payment_type: "cod",
-        order_amount: 366,
-        package_weight: 500,
-        package_length: 10,
-        package_width: 10,
-        package_height: 10,
-        auto_ship: 0,
-        auto_pickup: 0,
-        consignee: {
-          name: "Test User",
-          phone: "9999999999",
-          address: "Test Address",
-          city: "Jabalpur",
-          state: "Madhya Pradesh",
-          pincode: "482001"
-        },
-        pickup: {
-          warehouse_name: "Missara Warehouse",
-          name: "Gagan Mehra",
-          address: "village koosiwada tehsil gotegaon",
-          city: "Narsinghpur",
-          state: "Madhya Pradesh",
-          pincode: "487118",
-          phone: "7692931715"
-        },
-        order_items: [{
-          name: "Kurti",
-          qty: 1,
-          price: 366,
-          sku: "SKU-1"
-        }]
-      };
+      // Test payloads
+      const payloads = [
+        {
+          name: "Test Delhivery Air with Primary Warehouse (482001)",
+          payload: {
+            order_number: 'MS-TEST-DEL-PRI-' + Date.now(),
+            payment_type: "cod",
+            order_amount: 366,
+            package_weight: 500,
+            package_length: 10,
+            package_width: 10,
+            package_height: 10,
+            auto_ship: 0,
+            auto_pickup: 0,
+            courier_id: 1,
+            consignee: {
+              name: "Test User",
+              phone: "7692931715",
+              address: "Test Address",
+              city: "Jabalpur",
+              state: "Madhya Pradesh",
+              pincode: "482001"
+            },
+            pickup: {
+              warehouse_name: "Primary",
+              name: "Missara Admin",
+              address: "Missara Store",
+              city: "Jabalpur",
+              state: "Madhya Pradesh",
+              pincode: "482001",
+              phone: "7692931715"
+            },
+            order_items: [{
+              name: "Kurti",
+              qty: 1,
+              price: 366,
+              sku: "SKU-1"
+            }]
+          }
+        }
+      ];
 
-      try {
-        console.log('Creating shipment with auto_ship=0...');
-        const createRes = await axios.post('https://api.nimbuspost.com/v1/shipments', orderPayload, {
-          headers: { 'Authorization': `Bearer ${res.data.data}` }
-        });
-        console.log('Order Success:', createRes.data);
-      } catch (err) {
-        console.error('Order API Error Response:', err.response ? err.response.data : err.message);
+      for (const t of payloads) {
+        try {
+          console.log(`\n--- Running: ${t.name} ---`);
+          const createRes = await axios.post('https://api.nimbuspost.com/v1/shipments', t.payload, {
+            headers: { 'Authorization': `Bearer ${res.data.data}` }
+          });
+          console.log('Result:', createRes.data);
+        } catch (err) {
+          console.error('API Error Response:', err.response ? err.response.data : err.message);
+        }
       }
       
     } else {
