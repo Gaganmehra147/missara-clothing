@@ -36,7 +36,7 @@ async function connectToMongoDB() {
     console.log('====================================================');
     console.log('Successfully connected to MongoDB Atlas.');
     console.log('====================================================');
-    await seedProductsIfEmpty();
+    // Automatic seeding disabled so user deleted catalog remains clean
   } catch (err) {
     console.error('====================================================');
     console.error('MongoDB Atlas connection failed:', err.message);
@@ -47,16 +47,8 @@ async function connectToMongoDB() {
 }
 
 async function seedProductsIfEmpty() {
-  try {
-    const count = await Product.countDocuments();
-    if (count === 0) {
-      console.log('Product collection is empty. Seeding default products from db.js...');
-      await Product.insertMany(db.DEFAULT_PRODUCTS);
-      console.log(`Successfully seeded ${db.DEFAULT_PRODUCTS.length} products to MongoDB.`);
-    }
-  } catch (err) {
-    console.error('Error seeding products to MongoDB:', err.message);
-  }
+  // Seeding disabled so database stays empty when all products are deleted by admin
+  return;
 }
 
 connectToMongoDB();
