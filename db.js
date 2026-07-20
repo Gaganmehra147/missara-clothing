@@ -287,20 +287,7 @@ function readDB() {
       data.settings = {};
     }
     
-    // Auto-merge DEFAULT_PRODUCTS if missing from stored products
-    if (data.products && Array.isArray(data.products)) {
-      const existingIds = new Set(data.products.map(p => p.id));
-      let updated = false;
-      DEFAULT_PRODUCTS.forEach(defProd => {
-        if (!existingIds.has(defProd.id)) {
-          data.products.push(defProd);
-          updated = true;
-        }
-      });
-      if (updated) {
-        writeDB(data);
-      }
-    } else {
+    if (!data.products || !Array.isArray(data.products)) {
       data.products = DEFAULT_PRODUCTS;
       writeDB(data);
     }
