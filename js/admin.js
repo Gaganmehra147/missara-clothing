@@ -138,6 +138,7 @@ function setupFormHandler() {
         "Sarees": "SAR",
         "Lehengas": "LHG",
         "Anarkalis": "ANR",
+        "Co-Ord Sets": "CRD",
         "Fusion Wear": "FSN",
         "New Arrivals": "NEW",
         "Plus Sizes": "PLS",

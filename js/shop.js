@@ -72,6 +72,7 @@ const FILTER_CONFIG = [
       { label: "Designer Sarees", value: "Sarees" },
       { label: "Lehengas", value: "Lehengas" },
       { label: "Anarkalis", value: "Anarkalis" },
+      { label: "Co-Ord Sets", value: "Co-Ord Sets" },
       { label: "Fusion Wear", value: "Fusion Wear" },
       { label: "New Arrivals", value: "New Arrivals" },
       { label: "Plus Sizes (XXL)", value: "Plus Sizes" },

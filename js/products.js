@@ -224,6 +224,35 @@ const BACKUP_PRODUCTS = [
       neck: "N/A",
       washCare: "Dry Clean Only"
     }
+  },
+  {
+    id: 9,
+    title: "Pastel Pink Embroidered Co-Ord Set",
+    category: "Co-Ord Sets",
+    price: 2499,
+    originalPrice: 4999,
+    rating: 4.8,
+    reviewsCount: 37,
+    inventory: 15,
+    image: "images/product_dress.png",
+    hoverImage: "images/hero_banner_1.png",
+    description: "A stylish pastel pink 2-piece Co-Ord Set featuring a chic tunic top and matching trousers with delicate embroidery. Crafted in premium cotton for ultimate comfort and contemporary elegance.",
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    colors: ["Pastel Pink", "Off-White"],
+    tag: "Trending",
+    fabric: "Cotton",
+    occasion: "Casual",
+    pattern: "Embroidered",
+    style: "Co-Ord Set",
+    sleeveLength: "3/4 Sleeves",
+    neck: "V-Neck",
+    sku: "MSR-CRD-1009",
+    details: {
+      fabric: "100% Pure Premium Cotton",
+      length: "Hip Length Top + Full Length Trousers",
+      neck: "V-Neck",
+      washCare: "Hand Wash Separately or Machine Wash Cold"
+    }
   }
 ];
 
