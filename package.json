@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Missara Clothing Storefront",
   "scripts": {
+    "start": "node server.js",
     "dev": "node server.js"
   },
   "dependencies": {
