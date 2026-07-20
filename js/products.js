@@ -261,7 +261,7 @@ let PRODUCTS = [];
 // Load products catalog from server
 async function loadProductsCatalog() {
   try {
-    const res = await fetch('/api/products');
+    const res = await fetch('/api/products?t=' + Date.now(), { cache: 'no-store' });
     if (!res.ok) throw new Error('API server returned error');
     PRODUCTS = await res.json();
   } catch (e) {

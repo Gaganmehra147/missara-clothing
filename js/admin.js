@@ -260,7 +260,7 @@ function setupFormHandler() {
         method: method,
         headers: {
           'Content-Type': 'application/json',
-          'x-admin-pin': sessionStorage.getItem("missara_admin_pin")
+          'x-admin-pin': getAdminPin()
         },
         body: JSON.stringify(newProduct)
       });
@@ -496,7 +496,8 @@ async function saveStockUpdate(prodId, newStock) {
     const res = await fetch(`/api/products/${prodId}/stock`, {
       method: 'PUT',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'x-admin-pin': getAdminPin()
       },
       body: JSON.stringify({ inventory: newStock })
     });
@@ -516,6 +517,15 @@ async function saveStockUpdate(prodId, newStock) {
   }
 }
 
+function getAdminPin() {
+  let pin = sessionStorage.getItem("missara_admin_pin") || localStorage.getItem("missara_admin_pin");
+  if (!pin || pin.trim() === '') {
+    pin = "1234";
+    sessionStorage.setItem("missara_admin_pin", pin);
+  }
+  return pin;
+}
+
 // ==========================================
 // DELETE DYNAMIC PRODUCT
 // ==========================================
@@ -524,23 +534,33 @@ window.deleteBoutiqueProduct = async function(id) {
     return;
   }
 
+  const pin = getAdminPin();
+
   try {
     const res = await fetch(`/api/products/${id}`, {
       method: 'DELETE',
       headers: {
-        'x-admin-pin': sessionStorage.getItem("missara_admin_pin")
+        'x-admin-pin': pin
       }
     });
-    if (!res.ok) throw new Error('Failed to delete product from server');
+
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.error || errData.message || 'Failed to delete product from server');
+    }
     
+    // Immediately update in-memory PRODUCTS list
+    PRODUCTS = PRODUCTS.filter(p => p.id !== id);
+    renderCatalogTable();
+
     showToast("Article deleted successfully.");
 
     setTimeout(() => {
       window.location.reload();
-    }, 1000);
+    }, 800);
   } catch (err) {
-    console.error(err);
-    showToast("Failed to delete product from database", "error");
+    console.error("Delete Error:", err);
+    showToast(err.message || "Failed to delete product from database", "error");
   }
 };
 
@@ -586,27 +606,36 @@ window.deleteSelectedBoutiqueProducts = async function() {
     return;
   }
 
+  const pin = getAdminPin();
+
   try {
     const res = await fetch('/api/products/bulk-delete', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-admin-pin': sessionStorage.getItem("missara_admin_pin")
+        'x-admin-pin': pin
       },
       body: JSON.stringify({ ids: selectedIds })
     });
 
-    if (!res.ok) throw new Error('Failed to bulk delete products from server');
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.error || errData.message || 'Failed to bulk delete products from server');
+    }
     const data = await res.json();
+
+    // Update in-memory PRODUCTS list
+    PRODUCTS = PRODUCTS.filter(p => !selectedIds.includes(p.id));
+    renderCatalogTable();
 
     showToast(`${data.count || selectedIds.length} product(s) deleted successfully!`);
 
     setTimeout(() => {
       window.location.reload();
-    }, 1000);
+    }, 800);
   } catch (err) {
-    console.error(err);
-    showToast("Failed to delete selected products from database", "error");
+    console.error("Bulk Delete Error:", err);
+    showToast(err.message || "Failed to delete selected products from database", "error");
   }
 };
 
@@ -690,7 +719,7 @@ async function renderCRMOrdersTable() {
   let orders = [];
   try {
     const res = await fetch('/api/orders', {
-      headers: { 'x-admin-pin': sessionStorage.getItem("missara_admin_pin") }
+      headers: { 'x-admin-pin': getAdminPin() }
     });
     if (res.ok) orders = await res.json();
   } catch (e) {
@@ -791,7 +820,7 @@ window.updateOrderStatus = async function(orderId, newStatus) {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'x-admin-pin': sessionStorage.getItem("missara_admin_pin")
+          'x-admin-pin': getAdminPin()
         },
         body: JSON.stringify({ status: newStatus })
       });
@@ -1003,7 +1032,7 @@ async function saveOrderShipping(orderId, courier, awb, weight) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-admin-pin': sessionStorage.getItem("missara_admin_pin")
+          'x-admin-pin': getAdminPin()
         },
         body: JSON.stringify(nimbusPayload)
       });
@@ -1025,7 +1054,7 @@ async function saveOrderShipping(orderId, courier, awb, weight) {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        'x-admin-pin': sessionStorage.getItem("missara_admin_pin")
+        'x-admin-pin': getAdminPin()
       },
       body: JSON.stringify({
         status: "Shipped",
@@ -1170,7 +1199,7 @@ async function renderEmailLogsTable() {
 
   try {
     const res = await fetch('/api/emails', {
-      headers: { 'x-admin-pin': sessionStorage.getItem("missara_admin_pin") }
+      headers: { 'x-admin-pin': getAdminPin() }
     });
     if (res.ok) adminEmailLogs = await res.json();
   } catch (e) {

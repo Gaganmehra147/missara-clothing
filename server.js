@@ -702,6 +702,9 @@ app.post('/api/auth/reset-password', async (req, res) => {
 // Get all products
 app.get('/api/products', async (req, res) => {
   try {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
     if (isMongoDBActive) {
       const products = await Product.find().sort({ id: 1 });
       res.json(products);
