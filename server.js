@@ -795,6 +795,30 @@ app.delete('/api/products/:id', validateAdminPIN, async (req, res) => {
   }
 });
 
+// Bulk Delete Products
+app.post('/api/products/bulk-delete', validateAdminPIN, async (req, res) => {
+  try {
+    const { ids } = req.body;
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ error: 'Array of product IDs is required' });
+    }
+
+    const numericIds = ids.map(id => parseInt(id)).filter(id => !isNaN(id));
+
+    if (isMongoDBActive) {
+      const result = await Product.deleteMany({ id: { $in: numericIds } });
+      res.json({ success: true, count: result.deletedCount, message: `${result.deletedCount} products deleted.` });
+    } else {
+      const products = db.getProducts();
+      const updatedProducts = products.filter(p => !numericIds.includes(p.id));
+      db.saveProducts(updatedProducts);
+      res.json({ success: true, count: products.length - updatedProducts.length, message: `Products deleted successfully.` });
+    }
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // Adjust product stock (Admin only)
 app.put('/api/products/:id/stock', validateAdminPIN, async (req, res) => {
   try {

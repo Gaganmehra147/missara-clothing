@@ -424,6 +424,9 @@ function renderCatalogTable() {
     
     html += `
       <tr>
+        <td style="text-align:center;">
+          <input type="checkbox" class="catalog-row-check" data-id="${p.id}" style="cursor: pointer; width: 18px; height: 18px; accent-color: var(--primary-pink);" onchange="updateCatalogSelectionState()">
+        </td>
         <td><img src="${p.image}" class="catalog-thumb" alt="${p.title}"></td>
         <td>
           <div style="font-weight:600; color:var(--text-dark);">${p.title}</div>
@@ -465,6 +468,11 @@ function renderCatalogTable() {
   });
 
   tbody.innerHTML = html;
+  
+  // Reset selection state after rendering
+  const masterCheck = document.getElementById("select-all-catalog");
+  if (masterCheck) masterCheck.checked = false;
+  updateCatalogSelectionState();
 }
 
 // ==========================================
@@ -533,6 +541,72 @@ window.deleteBoutiqueProduct = async function(id) {
   } catch (err) {
     console.error(err);
     showToast("Failed to delete product from database", "error");
+  }
+};
+
+// ==========================================
+// BULK SELECTION & BULK DELETE HANDLERS
+// ==========================================
+window.toggleSelectAllCatalog = function(masterCheckbox) {
+  const checkboxes = document.querySelectorAll(".catalog-row-check");
+  checkboxes.forEach(cb => {
+    cb.checked = masterCheckbox.checked;
+  });
+  updateCatalogSelectionState();
+};
+
+window.updateCatalogSelectionState = function() {
+  const selectedBoxes = document.querySelectorAll(".catalog-row-check:checked");
+  const totalBoxes = document.querySelectorAll(".catalog-row-check");
+  const btnBulkDelete = document.getElementById("btn-bulk-delete");
+  const selectedCountSpan = document.getElementById("selected-count");
+  const masterCheck = document.getElementById("select-all-catalog");
+
+  const count = selectedBoxes.length;
+
+  if (selectedCountSpan) selectedCountSpan.textContent = count;
+
+  if (btnBulkDelete) {
+    btnBulkDelete.style.display = count > 0 ? "inline-flex" : "none";
+  }
+
+  if (masterCheck && totalBoxes.length > 0) {
+    masterCheck.checked = count === totalBoxes.length;
+    masterCheck.indeterminate = count > 0 && count < totalBoxes.length;
+  }
+};
+
+window.deleteSelectedBoutiqueProducts = async function() {
+  const selectedBoxes = document.querySelectorAll(".catalog-row-check:checked");
+  if (selectedBoxes.length === 0) return;
+
+  const selectedIds = Array.from(selectedBoxes).map(cb => parseInt(cb.getAttribute("data-id")));
+
+  if (!confirm(`Are you sure you want to delete ${selectedIds.length} selected article(s) from the catalog?`)) {
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/products/bulk-delete', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-admin-pin': sessionStorage.getItem("missara_admin_pin")
+      },
+      body: JSON.stringify({ ids: selectedIds })
+    });
+
+    if (!res.ok) throw new Error('Failed to bulk delete products from server');
+    const data = await res.json();
+
+    showToast(`${data.count || selectedIds.length} product(s) deleted successfully!`);
+
+    setTimeout(() => {
+      window.location.reload();
+    }, 1000);
+  } catch (err) {
+    console.error(err);
+    showToast("Failed to delete selected products from database", "error");
   }
 };
 

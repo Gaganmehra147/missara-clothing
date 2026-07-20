@@ -601,12 +601,20 @@
       
       <!-- Panel 2: Manage Active Catalog -->
       <section class="admin-panel" id="panel-manage-catalog">
-        <h3 class="panel-title">Active Outfits Catalog</h3>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+          <h3 class="panel-title" style="margin-bottom: 0;">Active Outfits Catalog</h3>
+          <button class="btn" id="btn-bulk-delete" style="background-color: #E53E3E; color: white; border: none; padding: 8px 18px; font-size: 0.85rem; font-weight: 600; display: none; align-items: center; gap: 6px; cursor: pointer; border-radius: 4px; transition: background 0.2s;" onclick="deleteSelectedBoutiqueProducts()">
+            <i class="far fa-trash-alt"></i> Delete Selected (<span id="selected-count">0</span>)
+          </button>
+        </div>
         
         <div class="catalog-table-wrapper">
           <table class="catalog-table">
             <thead>
               <tr>
+                <th style="width: 40px; text-align: center;">
+                  <input type="checkbox" id="select-all-catalog" title="Select All" style="cursor: pointer; width: 18px; height: 18px; accent-color: var(--primary-pink);" onchange="toggleSelectAllCatalog(this)">
+                </th>
                 <th>Image</th>
                 <th>Title</th>
                 <th>Category</th>
