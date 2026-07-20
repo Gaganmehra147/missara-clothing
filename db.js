@@ -154,7 +154,7 @@ const DEFAULT_PRODUCTS = [
   {
     id: 6,
     title: "Blush Pink Cotton Tunic",
-    category: "Fusion Wear",
+    category: "Tunics & Tops",
     price: 899,
     originalPrice: 1799,
     rating: 4.5,
@@ -285,8 +285,26 @@ function readDB() {
     const data = JSON.parse(rawData);
     if (!data.settings) {
       data.settings = {};
+    }
+    
+    // Auto-merge DEFAULT_PRODUCTS if missing from stored products
+    if (data.products && Array.isArray(data.products)) {
+      const existingIds = new Set(data.products.map(p => p.id));
+      let updated = false;
+      DEFAULT_PRODUCTS.forEach(defProd => {
+        if (!existingIds.has(defProd.id)) {
+          data.products.push(defProd);
+          updated = true;
+        }
+      });
+      if (updated) {
+        writeDB(data);
+      }
+    } else {
+      data.products = DEFAULT_PRODUCTS;
       writeDB(data);
     }
+
     return data;
   } catch (e) {
     console.error('Error reading database file, resetting...', e);

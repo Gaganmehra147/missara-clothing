@@ -144,7 +144,7 @@ const BACKUP_PRODUCTS = [
   {
     id: 6,
     title: "Blush Pink Cotton Tunic",
-    category: "Fusion Wear",
+    category: "Tunics & Tops",
     price: 899,
     originalPrice: 1799,
     rating: 4.5,
