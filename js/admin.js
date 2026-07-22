@@ -966,7 +966,11 @@ async function saveOrderShipping(orderId, courier, awb, weight) {
     let estimatedDelivery = "";
     
     // Fetch order first to get shipping pincode
-    const orderRes = await fetch(`/api/orders/${orderId}`);
+    const orderRes = await fetch(`/api/orders/${orderId}`, {
+      headers: {
+        'x-admin-pin': getAdminPin()
+      }
+    });
     if (!orderRes.ok) throw new Error('Order not found on server');
     const order = await orderRes.json();
     
@@ -994,9 +998,9 @@ async function saveOrderShipping(orderId, courier, awb, weight) {
     try {
       const nimbusPayload = {
         order_number: order.orderId,
-        payment_type: order.paymentOption === "COD" ? "cod" : "prepaid",
-        order_amount: order.grandTotal,
-        package_weight: weight || 500, // assuming grams
+        payment_type: (order.paymentMethod || "").toUpperCase().includes("COD") ? "cod" : "prepaid",
+        order_amount: order.total,
+        package_weight: Math.round(parseFloat(weight || "0.5") * 1000),
         package_length: 10,
         package_width: 10,
         package_height: 10,
@@ -1004,7 +1008,7 @@ async function saveOrderShipping(orderId, courier, awb, weight) {
         auto_pickup: 0,
         courier_id: selectedCourierId,
         consignee: {
-          name: `${order.customer.firstname} ${order.customer.lastname}`,
+          name: order.customer.name,
           phone: order.customer.phone,
           address: order.customer.address,
           city: order.customer.city,
@@ -1020,11 +1024,11 @@ async function saveOrderShipping(orderId, courier, awb, weight) {
           pincode: "482001",
           phone: "7692931715"
         },
-        order_items: order.cart.map(item => ({
+        order_items: (order.items || []).map(item => ({
           name: item.title,
           qty: item.quantity,
           price: item.price,
-          sku: `SKU-${item.id}`
+          sku: item.sku || `SKU-${item.id}`
         }))
       };
 
