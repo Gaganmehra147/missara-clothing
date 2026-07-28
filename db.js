@@ -365,5 +365,15 @@ module.exports = {
     db.settings = settings;
     writeDB(db);
     return db.settings;
+  },
+  getBills: () => {
+    return readDB().bills || [];
+  },
+  saveBills: (bills) => {
+    const db = readDB();
+    db.bills = bills;
+    writeDB(db);
+    return db.bills;
   }
 };
+

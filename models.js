@@ -124,16 +124,56 @@ const reviewSchema = new mongoose.Schema({
   helpful: { type: Number, default: 0 }
 });
 
+// ==========================================
+// BILL SCHEMA (POS COUNTER TRANSACTIONS)
+// ==========================================
+const billSchema = new mongoose.Schema({
+  billNo: { type: String, required: true, unique: true },
+  date: { type: String, required: true },
+  timestamp: { type: Number, required: true },
+  customer: {
+    name: { type: String, default: 'Walk-in Customer' },
+    phone: { type: String, default: '' },
+    email: { type: String, default: '' },
+    gstin: { type: String, default: '' }
+  },
+  items: [{
+    productId: { type: Number, required: true },
+    sku: { type: String, default: '' },
+    title: { type: String, required: true },
+    size: { type: String, default: 'Free Size' },
+    color: { type: String, default: '' },
+    price: { type: Number, required: true },
+    originalPrice: { type: Number },
+    quantity: { type: Number, required: true },
+    itemDiscount: { type: Number, default: 0 },
+    total: { type: Number, required: true }
+  }],
+  subtotal: { type: Number, required: true },
+  discountAmount: { type: Number, default: 0 },
+  gstPercent: { type: Number, default: 5 },
+  gstAmount: { type: Number, default: 0 },
+  roundOff: { type: Number, default: 0 },
+  grandTotal: { type: Number, required: true },
+  paymentMode: { type: String, default: 'Cash', enum: ['Cash', 'UPI', 'Card', 'Credit', 'Mixed'] },
+  cashierName: { type: String, default: 'Admin' },
+  status: { type: String, default: 'Completed', enum: ['Completed', 'Cancelled', 'Refunded'] },
+  notes: { type: String, default: '' }
+});
+
 const Product = mongoose.model('Product', productSchema);
 const Order = mongoose.model('Order', orderSchema);
 const Email = mongoose.model('Email', emailSchema);
 const User = mongoose.model('User', userSchema);
 const Review = mongoose.model('Review', reviewSchema);
+const Bill = mongoose.model('Bill', billSchema);
 
 module.exports = {
   Product,
   Order,
   Email,
   User,
-  Review
+  Review,
+  Bill
 };
+

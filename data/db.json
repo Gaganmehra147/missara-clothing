@@ -49,7 +49,7 @@
       "originalPrice": 4399,
       "rating": 4.9,
       "reviewsCount": 1,
-      "inventory": 1,
+      "inventory": 0,
       "image": "images/prod_1784587995727_1.jpg",
       "hoverImage": "images/prod_1784587995727_2.jpg",
       "images": [
@@ -86,7 +86,7 @@
       "originalPrice": 2799,
       "rating": 5,
       "reviewsCount": 1,
-      "inventory": 1,
+      "inventory": 0,
       "image": "images/prod_1784588122625_1.jpg",
       "hoverImage": "images/prod_1784588122625_2.jpg",
       "images": [
@@ -202,7 +202,7 @@
       "originalPrice": 2095,
       "rating": 4.8,
       "reviewsCount": 1,
-      "inventory": 2,
+      "inventory": 1,
       "image": "images/prod_1784588364347_1.jpg",
       "hoverImage": "images/prod_1784588364347_2.jpg",
       "images": [
@@ -2187,7 +2187,7 @@
       "originalPrice": 1499,
       "rating": 4.7,
       "reviewsCount": 8,
-      "inventory": 5,
+      "inventory": 14,
       "image": "images/prod_1784595309113_1.jpg",
       "hoverImage": "images/prod_1784595309113_2.jpg",
       "images": [
@@ -3807,5 +3807,182 @@
       "_id": "1784019267135"
     }
   ],
-  "settings": {}
+  "settings": {},
+  "bills": [
+    {
+      "billNo": "MIS-POS-479350",
+      "date": "2026-07-28",
+      "timestamp": 1785251479350,
+      "customer": {
+        "name": "Gagan",
+        "phone": "6236565656",
+        "email": "",
+        "gstin": ""
+      },
+      "items": [
+        {
+          "productId": 1784588364347,
+          "sku": "MSR-KRT-606",
+          "title": "Off-White & Gold Floral Embroidered Short Kurta & Pant Set",
+          "size": "XL",
+          "color": "",
+          "price": 1595,
+          "originalPrice": 2095,
+          "quantity": 1,
+          "itemDiscount": 0,
+          "total": 1595
+        }
+      ],
+      "subtotal": 1595,
+      "discountAmount": 0,
+      "gstPercent": 12,
+      "gstAmount": 191.4,
+      "roundOff": -0.4,
+      "grandTotal": 1786,
+      "paymentMode": "Cash",
+      "cashierName": "Admin",
+      "status": "Completed",
+      "notes": ""
+    },
+    {
+      "billNo": "MIS-POS-295108",
+      "date": "2026-07-28",
+      "timestamp": 1785236295108,
+      "customer": {
+        "name": "Walk-in Customer",
+        "phone": "",
+        "email": "",
+        "gstin": ""
+      },
+      "items": [
+        {
+          "productId": 1784588122625,
+          "sku": "MSR-CRD-303",
+          "title": "Off-White Sleeveless Waistcoat & Trousers Satin Co-Ord Set",
+          "size": "L",
+          "color": "",
+          "price": 2299,
+          "originalPrice": 2799,
+          "quantity": 1,
+          "itemDiscount": 0,
+          "total": 2299
+        }
+      ],
+      "subtotal": 2299,
+      "discountAmount": 149,
+      "gstPercent": 12,
+      "gstAmount": 258,
+      "roundOff": 0,
+      "grandTotal": 2408,
+      "paymentMode": "Cash",
+      "cashierName": "Admin",
+      "status": "Completed",
+      "notes": ""
+    },
+    {
+      "billNo": "MIS-POS-955918",
+      "date": "2026-07-28",
+      "timestamp": 1785235955918,
+      "customer": {
+        "name": "Walk-in Customer",
+        "phone": "",
+        "email": "",
+        "gstin": ""
+      },
+      "items": [
+        {
+          "productId": 1784587995727,
+          "sku": "MSR-SAR-202",
+          "title": "Rani Pink Zari Woven Soft Silk Banarasi Saree",
+          "size": "FS",
+          "color": "",
+          "price": 2199,
+          "originalPrice": 4399,
+          "quantity": 1,
+          "itemDiscount": 0,
+          "total": 2199
+        }
+      ],
+      "subtotal": 2199,
+      "discountAmount": 0,
+      "gstPercent": 5,
+      "gstAmount": 109.95,
+      "roundOff": 0.05,
+      "grandTotal": 2309,
+      "paymentMode": "UPI",
+      "cashierName": "Admin",
+      "status": "Completed",
+      "notes": ""
+    },
+    {
+      "billNo": "MIS-POS-686296",
+      "date": "2026-07-28",
+      "timestamp": 1785235686296,
+      "customer": {
+        "name": "gagan mehra",
+        "phone": "6261352318",
+        "email": "",
+        "gstin": ""
+      },
+      "items": [
+        {
+          "productId": 1784587995727,
+          "sku": "MSR-SAR-202",
+          "title": "Rani Pink Zari Woven Soft Silk Banarasi Saree",
+          "size": "FS",
+          "color": "",
+          "price": 2199,
+          "originalPrice": 4399,
+          "quantity": 1,
+          "itemDiscount": 0,
+          "total": 2199
+        }
+      ],
+      "subtotal": 2199,
+      "discountAmount": 197,
+      "gstPercent": 12,
+      "gstAmount": 240.24,
+      "roundOff": -0.24,
+      "grandTotal": 2242,
+      "paymentMode": "Cash",
+      "cashierName": "Admin",
+      "status": "Completed",
+      "notes": ""
+    },
+    {
+      "billNo": "MIS-POS-515246",
+      "date": "2026-07-28",
+      "timestamp": 1785235515246,
+      "customer": {
+        "name": "Test Customer",
+        "phone": "9876543210",
+        "email": "",
+        "gstin": ""
+      },
+      "items": [
+        {
+          "productId": 1784595309113,
+          "sku": "MSR-KUR-115",
+          "title": "Maroon Cotton Frock Pattern Embroidered Anarkali Kurti",
+          "size": "M",
+          "color": "",
+          "price": 995,
+          "originalPrice": 995,
+          "quantity": 1,
+          "itemDiscount": 0,
+          "total": 995
+        }
+      ],
+      "subtotal": 995,
+      "discountAmount": 50,
+      "gstPercent": 5,
+      "gstAmount": 47.25,
+      "roundOff": -0.25,
+      "grandTotal": 992,
+      "paymentMode": "UPI",
+      "cashierName": "Admin",
+      "status": "Completed",
+      "notes": ""
+    }
+  ]
 }
