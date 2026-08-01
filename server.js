@@ -13,7 +13,7 @@ const axios = require('axios');
 const rateLimit = require('express-rate-limit');
 const mongoose = require('mongoose');
 const db = require('./db');
-const { Product, Order, Email, User, Review } = require('./models');
+const { Product, Order, Email, User, Review, Bill, HoldBill, DayClose, LedgerPayment } = require('./models');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -175,7 +175,7 @@ function getEmailHeader(title) {
     <body>
       <div class="wrapper">
         <div class="header">
-          <h1>M I S A A R A</h1>
+          <h1>M I S S A R A</h1>
           <p>${title}</p>
         </div>
         <div class="content">
@@ -1676,6 +1676,453 @@ app.post('/api/chat', async (req, res) => {
 });
 
 // ==========================================
+// POS & BILLING API ENDPOINTS
+// ==========================================
+
+// 1. Fast Product Search & Barcode Lookup
+app.get('/api/pos/products', async (req, res) => {
+  try {
+    const query = req.query.q ? req.query.q.trim().toLowerCase() : '';
+    let products = [];
+    if (isMongoDBActive) {
+      if (query) {
+        products = await Product.find({
+          $or: [
+            { title: { $regex: query, $options: 'i' } },
+            { sku: { $regex: query, $options: 'i' } },
+            { category: { $regex: query, $options: 'i' } }
+          ]
+        }).limit(30);
+      } else {
+        products = await Product.find({}).limit(50);
+      }
+    } else {
+      const all = db.getProducts();
+      if (query) {
+        products = all.filter(p => 
+          (p.title && p.title.toLowerCase().includes(query)) ||
+          (p.sku && p.sku.toLowerCase().includes(query)) ||
+          (p.category && p.category.toLowerCase().includes(query)) ||
+          (String(p.id) === query)
+        );
+      } else {
+        products = all;
+      }
+    }
+    res.json(products);
+  } catch (err) {
+    console.error('POS product search error:', err.message);
+    res.status(500).json({ error: 'Failed to search POS products' });
+  }
+});
+
+app.get('/api/pos/barcode/:code', async (req, res) => {
+  try {
+    const code = req.params.code.trim().toLowerCase();
+    let product = null;
+    if (isMongoDBActive) {
+      product = await Product.findOne({
+        $or: [
+          { sku: { $regex: `^${code}$`, $options: 'i' } },
+          { id: !isNaN(code) ? parseInt(code, 10) : -1 }
+        ]
+      });
+    } else {
+      const all = db.getProducts();
+      product = all.find(p => (p.sku && p.sku.toLowerCase() === code) || String(p.id) === code);
+    }
+
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found for scanned barcode/SKU' });
+    }
+    res.json(product);
+  } catch (err) {
+    console.error('Barcode lookup error:', err.message);
+    res.status(500).json({ error: 'Barcode lookup failed' });
+  }
+});
+
+// 2. Create Bill (Complete POS Sale) & Deduct Stock
+app.post('/api/pos/bills', async (req, res) => {
+  try {
+    const { customer, items, subtotal, discountAmount, gstPercent, gstAmount, roundOff, grandTotal, paymentMode, cashierName, notes } = req.body;
+
+    if (!items || items.length === 0) {
+      return res.status(400).json({ error: 'Cannot generate empty bill' });
+    }
+
+    const billNo = 'BILL-' + Date.now().toString().slice(-6) + Math.floor(10 + Math.random() * 90);
+    const dateStr = new Date().toISOString().split('T')[0];
+    const timestamp = Date.now();
+
+    const newBill = {
+      billNo,
+      date: dateStr,
+      timestamp,
+      customer: customer || { name: 'Walk-in Customer', phone: '', email: '', gstin: '' },
+      items: items.map(item => ({
+        productId: Number(item.productId || item.id),
+        sku: item.sku || '',
+        title: item.title,
+        size: item.size || 'Free Size',
+        color: item.color || '',
+        price: Number(item.price),
+        originalPrice: Number(item.originalPrice || item.price),
+        quantity: Number(item.quantity),
+        itemDiscount: Number(item.itemDiscount || 0),
+        total: Number(item.total || (item.price * item.quantity))
+      })),
+      subtotal: Number(subtotal),
+      discountAmount: Number(discountAmount || 0),
+      gstPercent: Number(gstPercent || 5),
+      gstAmount: Number(gstAmount || 0),
+      roundOff: Number(roundOff || 0),
+      grandTotal: Number(grandTotal),
+      paymentMode: paymentMode || 'Cash',
+      cashierName: cashierName || 'Admin',
+      status: 'Completed',
+      notes: notes || ''
+    };
+
+    if (isMongoDBActive) {
+      const saved = await Bill.create(newBill);
+      
+      // Stock Inventory Deduction
+      for (const item of items) {
+        const prodId = Number(item.productId || item.id);
+        const qty = Number(item.quantity);
+        if (prodId) {
+          await Product.updateOne(
+            { id: prodId, inventory: { $gte: qty } },
+            { $inc: { inventory: -qty } }
+          );
+        }
+      }
+      res.json({ success: true, bill: saved });
+    } else {
+      const bills = db.getBills();
+      bills.unshift(newBill);
+      db.saveBills(bills);
+
+      // Stock Deduction Local
+      const products = db.getProducts();
+      items.forEach(item => {
+        const prodId = Number(item.productId || item.id);
+        const qty = Number(item.quantity);
+        const p = products.find(prod => prod.id === prodId);
+        if (p) {
+          p.inventory = Math.max(0, (p.inventory || 0) - qty);
+        }
+      });
+      db.saveProducts(products);
+
+      res.json({ success: true, bill: newBill });
+    }
+  } catch (err) {
+    console.error('Error saving POS bill:', err.message);
+    res.status(500).json({ error: 'Failed to complete POS billing transaction' });
+  }
+});
+
+// 3. Fetch POS Bills History
+app.get('/api/pos/bills', async (req, res) => {
+  try {
+    const search = req.query.search ? req.query.search.trim().toLowerCase() : '';
+    const date = req.query.date || '';
+
+    let bills = [];
+    if (isMongoDBActive) {
+      let filter = {};
+      if (date) filter.date = date;
+      if (search) {
+        filter.$or = [
+          { billNo: { $regex: search, $options: 'i' } },
+          { 'customer.name': { $regex: search, $options: 'i' } },
+          { 'customer.phone': { $regex: search, $options: 'i' } },
+          { paymentMode: { $regex: search, $options: 'i' } }
+        ];
+      }
+      bills = await Bill.find(filter).sort({ timestamp: -1 }).limit(100);
+    } else {
+      bills = db.getBills();
+      if (date) {
+        bills = bills.filter(b => b.date === date);
+      }
+      if (search) {
+        bills = bills.filter(b => 
+          (b.billNo && b.billNo.toLowerCase().includes(search)) ||
+          (b.customer && b.customer.name && b.customer.name.toLowerCase().includes(search)) ||
+          (b.customer && b.customer.phone && b.customer.phone.includes(search)) ||
+          (b.paymentMode && b.paymentMode.toLowerCase().includes(search))
+        );
+      }
+    }
+    res.json(bills);
+  } catch (err) {
+    console.error('Error fetching POS bills:', err.message);
+    res.status(500).json({ error: 'Failed to fetch bills history' });
+  }
+});
+
+// 4. Fetch Bill Details by BillNo
+app.get('/api/pos/bills/:billNo', async (req, res) => {
+  try {
+    const { billNo } = req.params;
+    let bill = null;
+    if (isMongoDBActive) {
+      bill = await Bill.findOne({ billNo });
+    } else {
+      bill = db.getBills().find(b => b.billNo === billNo);
+    }
+    if (!bill) {
+      return res.status(404).json({ error: 'Bill not found' });
+    }
+    res.json(bill);
+  } catch (err) {
+    console.error('Error fetching bill details:', err.message);
+    res.status(500).json({ error: 'Failed to fetch bill details' });
+  }
+});
+
+// 5. Hold & Resume Order APIs
+app.post('/api/pos/bills/hold', async (req, res) => {
+  try {
+    const { customer, items, subtotal, discountAmount, gstPercent, grandTotal, holdNote } = req.body;
+    const holdToken = 'HOLD-' + Date.now().toString().slice(-4) + Math.floor(100 + Math.random() * 900);
+    const dateStr = new Date().toISOString().split('T')[0];
+    
+    const newHold = {
+      holdToken,
+      holdNote: holdNote || 'Saved Cart',
+      timestamp: Date.now(),
+      date: dateStr,
+      customer: customer || { name: 'Walk-in Customer' },
+      items: items || [],
+      subtotal: subtotal || 0,
+      discountAmount: discountAmount || 0,
+      gstPercent: gstPercent || 5,
+      grandTotal: grandTotal || 0
+    };
+
+    if (isMongoDBActive) {
+      const saved = await HoldBill.create(newHold);
+      res.json({ success: true, holdToken: saved.holdToken, hold: saved });
+    } else {
+      const list = db.getHoldBills();
+      list.unshift(newHold);
+      db.saveHoldBills(list);
+      res.json({ success: true, holdToken: newHold.holdToken, hold: newHold });
+    }
+  } catch (err) {
+    console.error('Error saving hold bill:', err.message);
+    res.status(500).json({ error: 'Failed to hold order' });
+  }
+});
+
+app.get('/api/pos/bills/hold', async (req, res) => {
+  try {
+    let list = [];
+    if (isMongoDBActive) {
+      list = await HoldBill.find({}).sort({ timestamp: -1 });
+    } else {
+      list = db.getHoldBills();
+    }
+    res.json(list);
+  } catch (err) {
+    console.error('Error fetching hold bills:', err.message);
+    res.status(500).json({ error: 'Failed to fetch hold orders' });
+  }
+});
+
+app.delete('/api/pos/bills/hold/:token', async (req, res) => {
+  try {
+    const { token } = req.params;
+    if (isMongoDBActive) {
+      await HoldBill.deleteOne({ holdToken: token });
+    } else {
+      let list = db.getHoldBills();
+      list = list.filter(h => h.holdToken !== token);
+      db.saveHoldBills(list);
+    }
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error deleting hold bill:', err.message);
+    res.status(500).json({ error: 'Failed to delete hold bill' });
+  }
+});
+
+// 6. Day End / Closing Reports
+app.get('/api/pos/day-close/summary', async (req, res) => {
+  try {
+    const dateStr = req.query.date || new Date().toISOString().split('T')[0];
+    let bills = [];
+
+    if (isMongoDBActive) {
+      bills = await Bill.find({ date: dateStr, status: 'Completed' });
+    } else {
+      bills = db.getBills().filter(b => b.date === dateStr && b.status !== 'Cancelled');
+    }
+
+    const summary = {
+      date: dateStr,
+      totalBills: bills.length,
+      totalSales: 0,
+      cashSales: 0,
+      upiSales: 0,
+      cardSales: 0,
+      creditSales: 0,
+      totalTax: 0,
+      totalDiscounts: 0
+    };
+
+    bills.forEach(b => {
+      summary.totalSales += (b.grandTotal || 0);
+      summary.totalTax += (b.gstAmount || 0);
+      summary.totalDiscounts += (b.discountAmount || 0);
+
+      const mode = (b.paymentMode || 'Cash').toLowerCase();
+      if (mode.includes('cash')) summary.cashSales += (b.grandTotal || 0);
+      else if (mode.includes('upi')) summary.upiSales += (b.grandTotal || 0);
+      else if (mode.includes('card')) summary.cardSales += (b.grandTotal || 0);
+      else if (mode.includes('credit')) summary.creditSales += (b.grandTotal || 0);
+      else summary.cashSales += (b.grandTotal || 0);
+    });
+
+    res.json(summary);
+  } catch (err) {
+    console.error('Error generating day close summary:', err.message);
+    res.status(500).json({ error: 'Failed to generate day summary' });
+  }
+});
+
+app.post('/api/pos/day-close', async (req, res) => {
+  try {
+    const { date, totalBills, totalSales, cashSales, upiSales, cardSales, creditSales, totalTax, totalDiscounts, cashInDrawer, closedBy, notes } = req.body;
+    const dateStr = date || new Date().toISOString().split('T')[0];
+
+    const report = {
+      date: dateStr,
+      timestamp: Date.now(),
+      closedBy: closedBy || 'Admin',
+      totalBills: Number(totalBills || 0),
+      totalSales: Number(totalSales || 0),
+      cashSales: Number(cashSales || 0),
+      upiSales: Number(upiSales || 0),
+      cardSales: Number(cardSales || 0),
+      creditSales: Number(creditSales || 0),
+      totalTax: Number(totalTax || 0),
+      totalDiscounts: Number(totalDiscounts || 0),
+      cashInDrawer: Number(cashInDrawer || cashSales || 0),
+      notes: notes || ''
+    };
+
+    if (isMongoDBActive) {
+      await DayClose.updateOne({ date: dateStr }, report, { upsert: true });
+    } else {
+      const closes = db.getDayCloses();
+      const existingIdx = closes.findIndex(c => c.date === dateStr);
+      if (existingIdx >= 0) closes[existingIdx] = report;
+      else closes.unshift(report);
+      db.saveDayCloses(closes);
+    }
+    res.json({ success: true, report });
+  } catch (err) {
+    console.error('Error closing day:', err.message);
+    res.status(500).json({ error: 'Failed to save day close report' });
+  }
+});
+
+app.get('/api/pos/day-close/history', async (req, res) => {
+  try {
+    let reports = [];
+    if (isMongoDBActive) {
+      reports = await DayClose.find({}).sort({ timestamp: -1 }).limit(30);
+    } else {
+      reports = db.getDayCloses();
+    }
+    res.json(reports);
+  } catch (err) {
+    console.error('Error fetching day close history:', err.message);
+    res.status(500).json({ error: 'Failed to fetch day closing history' });
+  }
+});
+
+// 7. Customer Ledger & Dues Management
+app.get('/api/pos/ledger', async (req, res) => {
+  try {
+    let bills = [];
+    let payments = [];
+
+    if (isMongoDBActive) {
+      bills = await Bill.find({ paymentMode: 'Credit' });
+      payments = await LedgerPayment.find({});
+    } else {
+      bills = db.getBills().filter(b => b.paymentMode === 'Credit');
+      payments = db.getLedgerPayments();
+    }
+
+    const customersMap = {};
+
+    bills.forEach(b => {
+      const phone = (b.customer && b.customer.phone) || 'Unsaved';
+      const name = (b.customer && b.customer.name) || 'Walk-in Customer';
+      if (!customersMap[phone]) {
+        customersMap[phone] = { phone, name, totalDue: 0, totalPaid: 0, balance: 0, billsCount: 0 };
+      }
+      customersMap[phone].totalDue += (b.grandTotal || 0);
+      customersMap[phone].billsCount += 1;
+    });
+
+    payments.forEach(p => {
+      const phone = p.phone;
+      if (customersMap[phone]) {
+        customersMap[phone].totalPaid += (p.amountPaid || 0);
+      }
+    });
+
+    Object.keys(customersMap).forEach(phone => {
+      customersMap[phone].balance = customersMap[phone].totalDue - customersMap[phone].totalPaid;
+    });
+
+    res.json(Object.values(customersMap));
+  } catch (err) {
+    console.error('Error fetching customer ledger:', err.message);
+    res.status(500).json({ error: 'Failed to fetch customer ledger' });
+  }
+});
+
+app.post('/api/pos/ledger/payment', async (req, res) => {
+  try {
+    const { phone, customerName, amountPaid, paymentMode, notes } = req.body;
+    if (!phone || !amountPaid) {
+      return res.status(400).json({ error: 'Phone and Amount are required' });
+    }
+
+    const newPayment = {
+      phone,
+      customerName: customerName || 'Customer',
+      amountPaid: Number(amountPaid),
+      paymentMode: paymentMode || 'Cash',
+      date: new Date().toISOString().split('T')[0],
+      timestamp: Date.now(),
+      notes: notes || ''
+    };
+
+    if (isMongoDBActive) {
+      await LedgerPayment.create(newPayment);
+    } else {
+      const list = db.getLedgerPayments();
+      list.unshift(newPayment);
+      db.saveLedgerPayments(list);
+    }
+    res.json({ success: true, payment: newPayment });
+  } catch (err) {
+    console.error('Error recording ledger payment:', err.message);
+    res.status(500).json({ error: 'Failed to save ledger payment' });
+  }
+});
+
+// ==========================================
 // START SERVER
 // ==========================================
 app.listen(PORT, () => {
@@ -1685,3 +2132,4 @@ app.listen(PORT, () => {
   console.log(`Open in browser: http://localhost:${PORT}`);
   console.log(`====================================================`);
 });
+

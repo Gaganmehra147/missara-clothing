@@ -374,6 +374,29 @@
       text-align: right;
     }
 
+    .admin-layout {
+      display: grid;
+      grid-template-columns: 240px minmax(0, 1fr);
+      gap: 40px;
+      align-items: start;
+      min-width: 0;
+    }
+
+    .admin-panel {
+      min-width: 0;
+      box-sizing: border-box;
+    }
+
+    @media (max-width: 1100px) {
+      .admin-layout {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+      #panel-pos-counter > div:nth-child(3) {
+        grid-template-columns: 1fr !important;
+      }
+    }
+
     @media (max-width: 768px) {
       .admin-layout {
         grid-template-columns: 1fr;
@@ -446,6 +469,12 @@
         <button class="admin-menu-btn" onclick="switchPanel('manage-catalog', this)">
           <i class="fas fa-tasks"></i> Manage Catalog
         </button>
+        <button class="admin-menu-btn" onclick="switchPanel('pos-counter', this)">
+          <i class="fas fa-cash-register"></i> Billing Counter (POS)
+        </button>
+        <button class="admin-menu-btn" onclick="switchPanel('pos-bills-history', this)">
+          <i class="fas fa-receipt"></i> POS Bills & Reports
+        </button>
         <button class="admin-menu-btn" onclick="switchPanel('crm-orders', this)">
           <i class="fas fa-users-cog"></i> Customer Orders (CRM)
         </button>
@@ -470,15 +499,33 @@
             <div class="form-group">
               <label class="form-label" for="prod-category">Category</label>
               <select class="admin-select" id="prod-category" required>
-                <option value="Kurtas & Suits">Suits & Kurtas</option>
-                <option value="Sarees">Designer Sarees</option>
-                <option value="Lehengas">Lehengas</option>
-                <option value="Anarkalis">Anarkalis</option>
-                <option value="Co-Ord Sets">Co-Ord Sets</option>
-                <option value="Fusion Wear">Fusion Wear</option>
-                <option value="New Arrivals">New Arrivals</option>
-                <option value="Plus Sizes">Plus Sizes (XXL)</option>
-                <option value="Tunics & Tops">Tunics & Tops</option>
+                <optgroup label="Suits & Kurtas">
+                  <option value="3-Piece Suit">3-Piece Suit</option>
+                  <option value="2-Piece Kurta Set">2-Piece Kurta Set</option>
+                  <option value="Kurtas & Suits">Suits & Kurtas (General)</option>
+                  <option value="Anarkalis">Anarkalis</option>
+                </optgroup>
+                <optgroup label="Sarees Collection">
+                  <option value="Designer Sarees">Designer Sarees</option>
+                  <option value="Formal Saree">Formal Saree</option>
+                  <option value="Casual Saree">Casual Saree</option>
+                  <option value="Occasion Saree">Occasion Saree</option>
+                </optgroup>
+                <optgroup label="Wear & Occasion Types">
+                  <option value="Party Wear">Party Wear</option>
+                  <option value="Formal Wear">Formal Wear</option>
+                  <option value="Office Wear">Office Wear</option>
+                </optgroup>
+                <optgroup label="Western & Fusion">
+                  <option value="Co-Ord Sets">Co-Ord Sets</option>
+                  <option value="Fusion Wear">Fusion Wear</option>
+                  <option value="Tunics & Tops">Tunics & Tops</option>
+                </optgroup>
+                <optgroup label="Specialty Collections">
+                  <option value="Lehengas">Lehengas</option>
+                  <option value="New Arrivals">New Arrivals</option>
+                  <option value="Plus Sizes">Plus Sizes (XXL)</option>
+                </optgroup>
               </select>
             </div>
           </div>
@@ -721,6 +768,206 @@
         </form>
       </section>
 
+      <!-- Panel 6: POS Billing Counter -->
+      <section class="admin-panel" id="panel-pos-counter" style="padding: 25px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid var(--primary-pink); padding-bottom: 12px; margin-bottom: 20px;">
+          <div>
+            <h3 style="font-family: var(--font-heading); font-size: 1.5rem; margin: 0; color: var(--text-dark);">
+              <i class="fas fa-cash-register" style="color: var(--primary-pink); margin-right: 8px;"></i> POS Billing Counter
+            </h3>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">Fast counter billing, barcode scan, thermal printing & stock deduction</span>
+          </div>
+          <div style="display:flex; gap:10px;">
+            <button type="button" class="btn btn-secondary" id="btn-pos-resume-hold" style="width:auto; padding:8px 15px; font-size:0.82rem;">
+              <i class="fas fa-pause-circle"></i> Held Bills (<span id="hold-bills-count">0</span>)
+            </button>
+            <button type="button" class="btn btn-secondary" id="btn-pos-clear-all" style="width:auto; padding:8px 15px; font-size:0.82rem; color:#E53E3E;">
+              <i class="fas fa-trash-alt"></i> Clear Ticket
+            </button>
+          </div>
+        </div>
+
+        <!-- Barcode & Search Top Input -->
+        <div style="background-color: var(--bg-cream); border: 1px solid var(--border-light); border-radius: 8px; padding: 15px; margin-bottom: 20px; display: flex; gap: 15px; align-items: center;">
+          <div style="flex: 1; position: relative;">
+            <i class="fas fa-barcode" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: 1.2rem; color: var(--primary-pink);"></i>
+            <input type="text" id="pos-barcode-input" placeholder="Scan Barcode or Type SKU / Title (Press Enter to Add)..." class="admin-input" style="padding-left: 45px; font-size: 1rem; height: 46px; border: 2px solid var(--primary-pink); font-weight: 600;" autofocus autocomplete="off">
+          </div>
+          <button type="button" class="btn btn-primary" id="btn-pos-search-add" style="width: auto; height: 46px; padding: 0 25px;">
+            <i class="fas fa-plus"></i> Add Item
+          </button>
+        </div>
+
+        <div style="display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 20px; align-items: start;">
+          <!-- Left Column: Product Search Grid -->
+          <div style="background-color: var(--bg-white); border: 1px solid var(--border-light); border-radius: 8px; padding: 15px; min-width: 0;">
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+              <input type="text" id="pos-catalog-search" placeholder="Search catalog..." class="admin-input" style="flex:1; min-width: 0;">
+              <select id="pos-catalog-category" class="admin-select" style="width: 140px; flex-shrink: 0;">
+                <option value="">All Categories</option>
+                <option value="Kurtas & Suits">Kurtas & Suits</option>
+                <option value="Sarees">Sarees</option>
+                <option value="Lehengas">Lehengas</option>
+                <option value="Anarkalis">Anarkalis</option>
+                <option value="Co-Ord Sets">Co-Ord Sets</option>
+              </select>
+            </div>
+            <div id="pos-product-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; max-height: 440px; overflow-y: auto; padding-right: 5px;">
+              <!-- Product cards rendered dynamically -->
+            </div>
+          </div>
+
+          <!-- Right Column: Bill Ticket & Cart Summary -->
+          <div style="background-color: var(--bg-cream); border: 1px solid var(--border-light); border-radius: 8px; padding: 15px; box-shadow: var(--shadow-sm); min-width: 0;">
+            <!-- Manual Custom Item Input Section -->
+            <div style="background-color: var(--bg-white); border: 1px solid var(--border-light); border-radius: 6px; padding: 12px; margin-bottom: 15px;">
+              <div style="font-size: 0.78rem; font-weight: 700; color: var(--primary-pink); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                <i class="fas fa-edit"></i> Manual Custom Item Entry (Name & Price)
+              </div>
+              <div style="display: grid; grid-template-columns: minmax(0, 1.8fr) minmax(0, 1fr) minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 6px; align-items: center;">
+                <input type="text" id="pos-manual-name" placeholder="Item Name (e.g. Alteration)" class="admin-input" style="height:34px; font-size:0.82rem; width:100%; box-sizing:border-box;">
+                <input type="number" id="pos-manual-price" placeholder="Price ₹" min="1" class="admin-input" style="height:34px; font-size:0.82rem; width:100%; box-sizing:border-box;">
+                <input type="number" id="pos-manual-qty" placeholder="Qty" value="1" min="1" class="admin-input" style="height:34px; font-size:0.82rem; text-align:center; width:100%; box-sizing:border-box;">
+                <button type="button" id="btn-pos-add-manual" class="btn btn-secondary" style="height:34px; padding:0 4px; font-size:0.75rem; width:100%; font-weight:700;">
+                  <i class="fas fa-plus-circle"></i> Add
+                </button>
+              </div>
+            </div>
+
+            <!-- Customer Info -->
+            <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; margin-bottom: 15px;">
+              <div style="min-width:0;">
+                <label style="font-size:0.75rem; font-weight:700; color:var(--text-dark); display:block;">Customer Name</label>
+                <input type="text" id="pos-cust-name" placeholder="Walk-in Customer" value="Walk-in Customer" class="admin-input" style="height:36px; font-size:0.85rem; width:100%; box-sizing:border-box;">
+              </div>
+              <div style="min-width:0;">
+                <label style="font-size:0.75rem; font-weight:700; color:var(--text-dark); display:block;">Mobile Number</label>
+                <input type="text" id="pos-cust-phone" placeholder="10-digit mobile" class="admin-input" style="height:36px; font-size:0.85rem; width:100%; box-sizing:border-box;">
+              </div>
+            </div>
+
+            <!-- Items Ticket Table -->
+            <div style="max-height: 220px; overflow-y: auto; margin-bottom: 15px; border: 1px solid var(--border-light); border-radius: 6px; background-color: var(--bg-white);">
+              <table style="width: 100%; border-collapse: collapse; font-size: 0.82rem;">
+                <thead style="background-color: var(--secondary-pink); position: sticky; top: 0;">
+                  <tr>
+                    <th style="padding: 8px; text-align: left;">Item</th>
+                    <th style="padding: 8px; text-align: center; width: 60px;">Size</th>
+                    <th style="padding: 8px; text-align: center; width: 80px;">Qty</th>
+                    <th style="padding: 8px; text-align: right; width: 70px;">Price</th>
+                    <th style="padding: 8px; text-align: right; width: 70px;">Total</th>
+                    <th style="padding: 8px; text-align: center; width: 30px;"></th>
+                  </tr>
+                </thead>
+                <tbody id="pos-ticket-items-body">
+                  <!-- Dynamic Ticket rows -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Calculation Totals -->
+            <div style="background-color: var(--bg-white); border: 1px solid var(--border-light); border-radius: 6px; padding: 12px; margin-bottom: 15px; font-size: 0.85rem;">
+              <div style="display:flex; justify-content:space-between; margin-bottom: 6px;">
+                <span>Subtotal:</span>
+                <span id="pos-calc-subtotal" style="font-weight:600;">₹0</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
+                <span>Discount (₹):</span>
+                <input type="number" id="pos-calc-discount" value="0" min="0" class="admin-input" style="width:80px; height:28px; padding:2px 6px; font-size:0.82rem; text-align:right;">
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
+                <span>GST Tax (%):</span>
+                <select id="pos-calc-gst" class="admin-select" style="width:80px; height:28px; padding:2px; font-size:0.82rem;">
+                  <option value="0">0%</option>
+                  <option value="5" selected>5%</option>
+                  <option value="12">12%</option>
+                  <option value="18">18%</option>
+                </select>
+              </div>
+              <div style="display:flex; justify-content:space-between; margin-bottom: 6px; color: var(--text-muted); font-size:0.78rem;">
+                <span>Tax Amount:</span>
+                <span id="pos-calc-tax-amount">₹0</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; border-top: 1px dashed var(--border-light); padding-top: 8px; font-size: 1.15rem; font-weight: 800; color: var(--primary-pink);">
+                <span>Grand Total:</span>
+                <span id="pos-calc-grand-total">₹0</span>
+              </div>
+            </div>
+
+            <!-- Payment Mode Selector -->
+            <div style="margin-bottom: 15px;">
+              <label style="font-size:0.75rem; font-weight:700; color:var(--text-dark); display:block; margin-bottom:5px;">Payment Method</label>
+              <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:6px;">
+                <button type="button" class="pos-pay-mode-btn active" data-mode="Cash" style="padding:8px 4px; border:1px solid var(--primary-pink); background:var(--primary-pink); color:#fff; border-radius:4px; font-size:0.78rem; font-weight:700; cursor:pointer;">💵 Cash</button>
+                <button type="button" class="pos-pay-mode-btn" data-mode="UPI" style="padding:8px 4px; border:1px solid var(--border-light); background:#fff; color:var(--text-dark); border-radius:4px; font-size:0.78rem; font-weight:700; cursor:pointer;">📱 UPI</button>
+                <button type="button" class="pos-pay-mode-btn" data-mode="Card" style="padding:8px 4px; border:1px solid var(--border-light); background:#fff; color:var(--text-dark); border-radius:4px; font-size:0.78rem; font-weight:700; cursor:pointer;">💳 Card</button>
+                <button type="button" class="pos-pay-mode-btn" data-mode="Credit" style="padding:8px 4px; border:1px solid var(--border-light); background:#fff; color:var(--text-dark); border-radius:4px; font-size:0.78rem; font-weight:700; cursor:pointer;">📖 Dues</button>
+              </div>
+            </div>
+
+            <!-- Submit Action Buttons -->
+            <div style="display:flex; gap:10px;">
+              <button type="button" class="btn btn-primary" id="btn-pos-complete-print" style="flex:2; padding:12px; font-size:0.95rem;">
+                <i class="fas fa-print"></i> Complete & Print Bill
+              </button>
+              <button type="button" class="btn btn-secondary" id="btn-pos-hold" style="flex:1; padding:12px; font-size:0.85rem; width:auto;">
+                <i class="fas fa-pause"></i> Hold
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Panel 7: POS Bills History & Reports -->
+      <section class="admin-panel" id="panel-pos-bills-history" style="padding: 25px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid var(--primary-pink); padding-bottom: 12px; margin-bottom: 20px;">
+          <div>
+            <h3 style="font-family: var(--font-heading); font-size: 1.5rem; margin: 0; color: var(--text-dark);">
+              <i class="fas fa-receipt" style="color: var(--primary-pink); margin-right: 8px;"></i> POS Bills & Sales History
+            </h3>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">View all counter receipts, re-print thermal bills, day closing reports & customer ledger</span>
+          </div>
+          <div style="display:flex; gap:10px;">
+            <button type="button" class="btn btn-primary" id="btn-open-day-close" style="width:auto; padding:8px 16px; font-size:0.85rem;">
+              <i class="fas fa-calendar-check"></i> Day Close Summary
+            </button>
+            <button type="button" class="btn btn-secondary" id="btn-open-ledger" style="width:auto; padding:8px 16px; font-size:0.85rem;">
+              <i class="fas fa-book-open"></i> Customer Ledger
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter Row -->
+        <div style="display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap;">
+          <input type="text" id="pos-bills-search" placeholder="Search by Bill No, Customer Name or Mobile..." class="admin-input" style="flex:2; min-width:220px;">
+          <input type="date" id="pos-bills-date" class="admin-input" style="flex:1; min-width:150px;">
+          <button type="button" class="btn btn-secondary" id="btn-refresh-bills" style="width:auto; padding:0 20px;">
+            <i class="fas fa-sync-alt"></i> Refresh List
+          </button>
+        </div>
+
+        <!-- Bills History Table -->
+        <div class="catalog-table-wrapper">
+          <table class="catalog-table">
+            <thead>
+              <tr>
+                <th>Bill No</th>
+                <th>Date & Time</th>
+                <th>Customer</th>
+                <th>Items</th>
+                <th>Payment Mode</th>
+                <th>Grand Total</th>
+                <th style="text-align:center;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="pos-bills-history-table-body">
+              <!-- Dynamic Rows -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+
 
     </div>
   </main>
@@ -811,10 +1058,71 @@
     </div>
   </div>
 
+  <!-- Thermal 80mm Printable Slip Modal -->
+  <div id="admin-thermal-print-modal" class="admin-lock-overlay" style="display: none; background-color: rgba(0,0,0,0.6); z-index: 3500;">
+    <div class="lock-card" style="max-width: 420px; background-color: #fff; text-align: left; position: relative; padding: 20px; border-radius: 8px; max-height: 90vh; display: flex; flex-direction: column;">
+      <button id="close-thermal-modal-btn" style="position: absolute; top: 10px; right: 10px; font-size: 1.5rem; color: #888; background:none; border:none; cursor:pointer;">&times;</button>
+      
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+        <h4 style="margin:0; font-family:var(--font-heading);"><i class="fas fa-print" style="color:var(--primary-pink);"></i> Thermal Receipt Preview</h4>
+        <button id="trigger-print-receipt-btn" class="btn btn-primary" style="width:auto; padding:6px 15px; font-size:0.8rem;"><i class="fas fa-print"></i> Print Slip</button>
+      </div>
+
+      <!-- Printable Area -->
+      <div id="printable-thermal-receipt" style="font-family: 'Courier New', Courier, monospace; font-size: 12px; color: #000; background: #fff; padding: 10px; border: 1px dashed #ccc; overflow-y: auto; flex: 1;">
+        <!-- Filled dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Day Close Modal -->
+  <div id="admin-day-close-modal" class="admin-lock-overlay" style="display: none; background-color: rgba(0,0,0,0.6); z-index: 3200;">
+    <div class="lock-card" style="max-width: 500px; background-color: #fff; text-align: left; position: relative; padding: 25px;">
+      <button id="close-day-close-modal-btn" style="position: absolute; top: 12px; right: 12px; font-size: 1.5rem; color: #888; background:none; border:none; cursor:pointer;">&times;</button>
+      <h3 style="font-family: var(--font-heading); font-size: 1.3rem; margin-bottom: 15px; color: var(--primary-pink);">
+        <i class="fas fa-calculator"></i> Daily Closing Sales Summary
+      </h3>
+      <div id="day-close-summary-body" style="font-size:0.9rem; margin-bottom:20px;">
+        <!-- Filled dynamically -->
+      </div>
+      <div style="display:flex; gap:10px;">
+        <button type="button" id="btn-save-day-close" class="btn btn-primary" style="flex:1;"><i class="fas fa-lock"></i> Save & Complete Day Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Customer Ledger Modal -->
+  <div id="admin-ledger-modal" class="admin-lock-overlay" style="display: none; background-color: rgba(0,0,0,0.6); z-index: 3200;">
+    <div class="lock-card" style="max-width: 650px; background-color: #fff; text-align: left; position: relative; padding: 25px; max-height: 85vh; display: flex; flex-direction: column;">
+      <button id="close-ledger-modal-btn" style="position: absolute; top: 12px; right: 12px; font-size: 1.5rem; color: #888; background:none; border:none; cursor:pointer;">&times;</button>
+      <h3 style="font-family: var(--font-heading); font-size: 1.3rem; margin-bottom: 15px; color: var(--primary-pink);">
+        <i class="fas fa-book-open"></i> Customer Ledger & Outstanding Dues
+      </h3>
+      <div id="ledger-table-container" style="flex:1; overflow-y:auto; margin-bottom:15px;">
+        <!-- Filled dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Held Bills List Modal -->
+  <div id="admin-hold-list-modal" class="admin-lock-overlay" style="display: none; background-color: rgba(0,0,0,0.6); z-index: 3200;">
+    <div class="lock-card" style="max-width: 500px; background-color: #fff; text-align: left; position: relative; padding: 25px;">
+      <button id="close-hold-modal-btn" style="position: absolute; top: 12px; right: 12px; font-size: 1.5rem; color: #888; background:none; border:none; cursor:pointer;">&times;</button>
+      <h3 style="font-family: var(--font-heading); font-size: 1.3rem; margin-bottom: 15px; color: var(--primary-pink);">
+        <i class="fas fa-pause-circle"></i> Resume Held Orders
+      </h3>
+      <div id="hold-bills-container" style="max-height: 350px; overflow-y: auto;">
+        <!-- Filled dynamically -->
+      </div>
+    </div>
+  </div>
+
+
   <!-- Core Scripts -->
   <script src="js/products.js"></script>
   <script src="js/shipping.js"></script>
   <script src="js/app.js"></script>
   <script src="js/admin.js"></script>
+  <script src="js/pos.js"></script>
 </body>
 </html>

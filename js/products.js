@@ -3,8 +3,8 @@
 const BACKUP_PRODUCTS = [
   {
     id: 1,
-    title: "Pastel Pink Anarkali Suit Set",
-    category: "Kurtas & Suits",
+    title: "Pastel Pink Anarkali 3-Piece Suit Set",
+    category: "3-Piece Suit",
     price: 1899,
     originalPrice: 3799,
     rating: 4.8,
@@ -31,8 +31,8 @@ const BACKUP_PRODUCTS = [
   },
   {
     id: 2,
-    title: "Pink Floral Printed Silk Saree",
-    category: "Sarees",
+    title: "Pink Floral Printed Silk Designer Saree",
+    category: "Designer Sarees",
     price: 3299,
     originalPrice: 6599,
     rating: 4.9,
@@ -59,8 +59,8 @@ const BACKUP_PRODUCTS = [
   },
   {
     id: 3,
-    title: "Premium Cotton Embroidered Kurta Set",
-    category: "Kurtas & Suits",
+    title: "Premium Cotton 2-Piece Kurta Set",
+    category: "2-Piece Kurta Set",
     price: 1599,
     originalPrice: 3199,
     rating: 4.7,
@@ -87,8 +87,8 @@ const BACKUP_PRODUCTS = [
   },
   {
     id: 4,
-    title: "Pastel Pink & Gold Lehenga Choli",
-    category: "Lehengas",
+    title: "Pastel Pink & Gold Party Wear Lehenga Choli",
+    category: "Party Wear",
     price: 8999,
     originalPrice: 17999,
     rating: 5.0,
@@ -143,8 +143,8 @@ const BACKUP_PRODUCTS = [
   },
   {
     id: 6,
-    title: "Blush Pink Cotton Tunic",
-    category: "Tunics & Tops",
+    title: "Blush Pink Office Wear Cotton Tunic",
+    category: "Office Wear",
     price: 899,
     originalPrice: 1799,
     rating: 4.5,
@@ -171,8 +171,8 @@ const BACKUP_PRODUCTS = [
   },
   {
     id: 7,
-    title: "Deep Pink Embroidered Velvet Suit",
-    category: "Kurtas & Suits",
+    title: "Deep Pink Formal Velvet Suit",
+    category: "Formal Wear",
     price: 4299,
     originalPrice: 8599,
     rating: 4.9,
@@ -199,8 +199,8 @@ const BACKUP_PRODUCTS = [
   },
   {
     id: 8,
-    title: "Pink Banarasi Silk Saree",
-    category: "Sarees",
+    title: "Pink Formal Banarasi Silk Saree",
+    category: "Formal Saree",
     price: 4999,
     originalPrice: 9999,
     rating: 4.9,

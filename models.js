@@ -161,12 +161,79 @@ const billSchema = new mongoose.Schema({
   notes: { type: String, default: '' }
 });
 
+// ==========================================
+// HOLD BILL SCHEMA (TEMPORARY HELD POS CARTS)
+// ==========================================
+const holdBillSchema = new mongoose.Schema({
+  holdToken: { type: String, required: true, unique: true },
+  holdNote: { type: String, default: '' },
+  timestamp: { type: Number, required: true },
+  date: { type: String, required: true },
+  customer: {
+    name: { type: String, default: 'Walk-in Customer' },
+    phone: { type: String, default: '' },
+    email: { type: String, default: '' },
+    gstin: { type: String, default: '' }
+  },
+  items: [{
+    productId: { type: Number, required: true },
+    sku: { type: String, default: '' },
+    title: { type: String, required: true },
+    size: { type: String, default: 'Free Size' },
+    color: { type: String, default: '' },
+    price: { type: Number, required: true },
+    originalPrice: { type: Number },
+    quantity: { type: Number, required: true },
+    itemDiscount: { type: Number, default: 0 },
+    total: { type: Number, required: true }
+  }],
+  subtotal: { type: Number, default: 0 },
+  discountAmount: { type: Number, default: 0 },
+  gstPercent: { type: Number, default: 5 },
+  grandTotal: { type: Number, default: 0 }
+});
+
+// ==========================================
+// DAY CLOSE SCHEMA (DAILY REVENUE & SUMMARY)
+// ==========================================
+const dayCloseSchema = new mongoose.Schema({
+  date: { type: String, required: true, unique: true },
+  timestamp: { type: Number, required: true },
+  closedBy: { type: String, default: 'Admin' },
+  totalBills: { type: Number, default: 0 },
+  totalSales: { type: Number, default: 0 },
+  cashSales: { type: Number, default: 0 },
+  upiSales: { type: Number, default: 0 },
+  cardSales: { type: Number, default: 0 },
+  creditSales: { type: Number, default: 0 },
+  totalTax: { type: Number, default: 0 },
+  totalDiscounts: { type: Number, default: 0 },
+  cashInDrawer: { type: Number, default: 0 },
+  notes: { type: String, default: '' }
+});
+
+// ==========================================
+// LEDGER PAYMENT SCHEMA
+// ==========================================
+const ledgerPaymentSchema = new mongoose.Schema({
+  phone: { type: String, required: true },
+  customerName: { type: String, required: true },
+  amountPaid: { type: Number, required: true },
+  paymentMode: { type: String, default: 'Cash' },
+  date: { type: String, required: true },
+  timestamp: { type: Number, required: true },
+  notes: { type: String, default: '' }
+});
+
 const Product = mongoose.model('Product', productSchema);
 const Order = mongoose.model('Order', orderSchema);
 const Email = mongoose.model('Email', emailSchema);
 const User = mongoose.model('User', userSchema);
 const Review = mongoose.model('Review', reviewSchema);
 const Bill = mongoose.model('Bill', billSchema);
+const HoldBill = mongoose.model('HoldBill', holdBillSchema);
+const DayClose = mongoose.model('DayClose', dayCloseSchema);
+const LedgerPayment = mongoose.model('LedgerPayment', ledgerPaymentSchema);
 
 module.exports = {
   Product,
@@ -174,6 +241,10 @@ module.exports = {
   Email,
   User,
   Review,
-  Bill
+  Bill,
+  HoldBill,
+  DayClose,
+  LedgerPayment
 };
+
 

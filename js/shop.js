@@ -68,10 +68,19 @@ const FILTER_CONFIG = [
     type: "checkboxes",
     field: "categories",
     options: [
+      { label: "3-Piece Suit", value: "3-Piece Suit" },
+      { label: "2-Piece Kurta Set", value: "2-Piece Kurta Set" },
       { label: "Suits & Kurtas", value: "Kurtas & Suits" },
-      { label: "Designer Sarees", value: "Sarees" },
-      { label: "Lehengas", value: "Lehengas" },
       { label: "Anarkalis", value: "Anarkalis" },
+      { label: "Designer Sarees", value: "Designer Sarees" },
+      { label: "Formal Saree", value: "Formal Saree" },
+      { label: "Casual Saree", value: "Casual Saree" },
+      { label: "Occasion Saree", value: "Occasion Saree" },
+      { label: "Sarees (All)", value: "Sarees" },
+      { label: "Party Wear", value: "Party Wear" },
+      { label: "Formal Wear", value: "Formal Wear" },
+      { label: "Office Wear", value: "Office Wear" },
+      { label: "Lehengas", value: "Lehengas" },
       { label: "Co-Ord Sets", value: "Co-Ord Sets" },
       { label: "Fusion Wear", value: "Fusion Wear" },
       { label: "New Arrivals", value: "New Arrivals" },
@@ -487,9 +496,18 @@ function applyFiltersAndRender() {
     );
   }
 
-  // 3. Filter by Selected Categories
+  // 3. Filter by Selected Categories (with smart sub-category fallback)
   if (filters.categories.length > 0) {
-    filtered = filtered.filter(p => filters.categories.includes(p.category));
+    filtered = filtered.filter(p => {
+      if (!p.category) return false;
+      return filters.categories.some(selectedCat => {
+        if (p.category === selectedCat) return true;
+        // Sub-category matching fallback:
+        if (selectedCat === "Sarees" && p.category.toLowerCase().includes("saree")) return true;
+        if (selectedCat === "Kurtas & Suits" && (p.category.includes("Suit") || p.category.includes("Kurta"))) return true;
+        return false;
+      });
+    });
   }
 
   // 4. Filter by Price Range

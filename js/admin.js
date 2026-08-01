@@ -104,6 +104,12 @@ window.switchPanel = function(panelId, btnElement) {
     renderEmailLogsTable();
   } else if (panelId === "payment-settings") {
     loadPaymentSettingsForm();
+  } else if (panelId === "pos-counter") {
+    if (typeof loadPOSProducts === "function") loadPOSProducts();
+    const barcodeInput = document.getElementById("pos-barcode-input");
+    if (barcodeInput) setTimeout(() => barcodeInput.focus(), 200);
+  } else if (panelId === "pos-bills-history") {
+    if (typeof loadPOSBillsHistory === "function") loadPOSBillsHistory();
   }
 };
 
@@ -134,10 +140,19 @@ function setupFormHandler() {
     // Check SKU & Auto-generate if empty
     if (!sku) {
       const catMap = {
+        "3-Piece Suit": "3PC",
+        "2-Piece Kurta Set": "2PC",
         "Kurtas & Suits": "KRT",
-        "Sarees": "SAR",
-        "Lehengas": "LHG",
         "Anarkalis": "ANR",
+        "Sarees": "SAR",
+        "Designer Sarees": "DSR",
+        "Formal Saree": "FSR",
+        "Casual Saree": "CSR",
+        "Occasion Saree": "OSR",
+        "Party Wear": "PTY",
+        "Formal Wear": "FRM",
+        "Office Wear": "OFF",
+        "Lehengas": "LHG",
         "Co-Ord Sets": "CRD",
         "Fusion Wear": "FSN",
         "New Arrivals": "NEW",

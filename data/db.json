@@ -49,7 +49,7 @@
       "originalPrice": 4399,
       "rating": 4.9,
       "reviewsCount": 1,
-      "inventory": 0,
+      "inventory": 12,
       "image": "images/prod_1784587995727_1.jpg",
       "hoverImage": "images/prod_1784587995727_2.jpg",
       "images": [
@@ -86,7 +86,7 @@
       "originalPrice": 2799,
       "rating": 5,
       "reviewsCount": 1,
-      "inventory": 0,
+      "inventory": 12,
       "image": "images/prod_1784588122625_1.jpg",
       "hoverImage": "images/prod_1784588122625_2.jpg",
       "images": [
@@ -442,7 +442,7 @@
       "originalPrice": 1899,
       "rating": 4.8,
       "reviewsCount": 1,
-      "inventory": 4,
+      "inventory": 3,
       "image": "images/prod_1784588704610_1.jpg",
       "hoverImage": "images/prod_1784588704610_2.jpg",
       "images": [
@@ -3810,6 +3810,39 @@
   "settings": {},
   "bills": [
     {
+      "billNo": "BILL-98980493",
+      "date": "2026-07-29",
+      "timestamp": 1785303989804,
+      "customer": {
+        "name": "GAGAN MEHRA",
+        "phone": "6261352318"
+      },
+      "items": [
+        {
+          "productId": 1784588704610,
+          "sku": "MSR-FUS-1212",
+          "title": "Mustard Yellow Floral Digital Printed Cotton Fusion Co-Ord Set",
+          "size": "L",
+          "color": "",
+          "price": 1399,
+          "originalPrice": 1899,
+          "quantity": 1,
+          "itemDiscount": 0,
+          "total": 1399
+        }
+      ],
+      "subtotal": 1399,
+      "discountAmount": 120,
+      "gstPercent": 12,
+      "gstAmount": 153,
+      "roundOff": 0,
+      "grandTotal": 1432,
+      "paymentMode": "Cash",
+      "cashierName": "Admin",
+      "status": "Completed",
+      "notes": ""
+    },
+    {
       "billNo": "MIS-POS-479350",
       "date": "2026-07-28",
       "timestamp": 1785251479350,
@@ -3983,6 +4016,37 @@
       "cashierName": "Admin",
       "status": "Completed",
       "notes": ""
+    }
+  ],
+  "holdBills": [
+    {
+      "holdToken": "HOLD-4367626",
+      "holdNote": "Hold at 11:18:34 am",
+      "timestamp": 1785304114367,
+      "date": "2026-07-29",
+      "customer": {
+        "name": "Gagan mehra"
+      },
+      "items": [
+        {
+          "productId": 1784587995727,
+          "sku": "MSR-SAR-202",
+          "title": "Rani Pink Zari Woven Soft Silk Banarasi Saree",
+          "size": "FS",
+          "availableSizes": [
+            "FS"
+          ],
+          "price": 2199,
+          "originalPrice": 4399,
+          "quantity": 1,
+          "itemDiscount": 0,
+          "total": 2199
+        }
+      ],
+      "subtotal": 2199,
+      "discountAmount": 120,
+      "gstPercent": 12,
+      "grandTotal": 2328
     }
   ]
 }
