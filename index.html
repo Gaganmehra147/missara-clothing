@@ -540,7 +540,7 @@
       <div class="carousel-content">
         <h3 class="carousel-subtitle">Handcrafted Luxury</h3>
         <h2 class="carousel-title">The Royal <span>Pink</span> Anarkali Suits</h2>
-        <a href="shop.html?category=Kurtas%20%26%20Suits" class="btn btn-primary carousel-btn">Explore Collection</a>
+        <a href="shop.html?category=3-Piece%20Suit" class="btn btn-primary carousel-btn">Explore Collection</a>
       </div>
     </div>
     <!-- Slide 2 -->
@@ -550,7 +550,37 @@
       <div class="carousel-content">
         <h3 class="carousel-subtitle">Timeless Drape</h3>
         <h2 class="carousel-title">Pastel Floral <span>Silk</span> Sarees</h2>
-        <a href="shop.html?category=Sarees" class="btn btn-primary carousel-btn">Shop Sarees</a>
+        <a href="shop.html?category=Designer%20Sarees" class="btn btn-primary carousel-btn">Shop Sarees</a>
+      </div>
+    </div>
+    <!-- Slide 3 -->
+    <div class="carousel-slide" id="slide-3">
+      <img src="images/category_party_wear.png" class="carousel-img" alt="Exquisite Royal Bridal Lehengas Collection">
+      <div class="carousel-overlay"></div>
+      <div class="carousel-content">
+        <h3 class="carousel-subtitle">Festive Edition</h3>
+        <h2 class="carousel-title">Exquisite <span>Bridal</span> Lehengas</h2>
+        <a href="shop.html?category=Lehengas" class="btn btn-primary carousel-btn">View Lehengas</a>
+      </div>
+    </div>
+    <!-- Slide 4 -->
+    <div class="carousel-slide" id="slide-4">
+      <img src="images/category_fusion_wear.png" class="carousel-img" alt="Modern Ethnic Fusion Wear Collection">
+      <div class="carousel-overlay"></div>
+      <div class="carousel-content">
+        <h3 class="carousel-subtitle">Modern Ethnic</h3>
+        <h2 class="carousel-title">Chic <span>Indo-Western</span> Fusion</h2>
+        <a href="shop.html?category=Fusion%20Wear" class="btn btn-primary carousel-btn">Shop Fusion</a>
+      </div>
+    </div>
+    <!-- Slide 5 -->
+    <div class="carousel-slide" id="slide-5">
+      <img src="images/category_coord_set.png" class="carousel-img" alt="Contemporary Co-Ord Sets Collection">
+      <div class="carousel-overlay"></div>
+      <div class="carousel-content">
+        <h3 class="carousel-subtitle">Daily Elegance</h3>
+        <h2 class="carousel-title">Contemporary <span>Co-Ord</span> Sets</h2>
+        <a href="shop.html?category=Co-Ord%20Sets" class="btn btn-primary carousel-btn">Explore Co-Ords</a>
       </div>
     </div>
     
@@ -964,16 +994,29 @@
     // ==========================================
     // TABBED PRODUCTS DYNAMIC RENDERING
     // ==========================================
-    function loadTabProducts(tag, tabButton) {
-      // Toggle active states on tab navigation buttons
-      document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
-      tabButton.classList.add("active");
+    async function loadTabProducts(tag, tabButton) {
+      if (tabButton) {
+        document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+        tabButton.classList.add("active");
+      }
       
       const grid = document.getElementById("homepage-product-grid");
       if (!grid) return;
       
+      // Ensure PRODUCTS catalog is loaded from server
+      if (typeof PRODUCTS === "undefined" || PRODUCTS.length === 0) {
+        if (typeof loadProductsCatalog === "function") {
+          await loadProductsCatalog();
+        }
+      }
+      
       // Filter products by Tag
-      const filtered = PRODUCTS.filter(p => p.tag === tag).slice(0, 4); // Limit to 4 cards
+      let filtered = PRODUCTS.filter(p => p.tag === tag).slice(0, 4); // Limit to 4 cards
+      
+      // Fallback: If no products match the tag, show first 4 catalog items
+      if (filtered.length === 0 && PRODUCTS.length > 0) {
+        filtered = PRODUCTS.slice(0, 4);
+      }
       
       let gridHTML = "";
       filtered.forEach(p => {
@@ -986,10 +1029,16 @@
       document.dispatchEvent(new Event("syncWishlistState"));
     }
     
-    // Load default tab (Best Sellers)
-    const defaultTabBtn = document.querySelector(".tab-btn");
-    if (defaultTabBtn) {
-      loadTabProducts("Best Seller", defaultTabBtn);
+    // Automatically load default tab (Best Sellers) as soon as DOM and catalog are ready
+    async function initDefaultTab() {
+      const defaultTabBtn = document.querySelector(".tab-btn");
+      await loadTabProducts("Best Seller", defaultTabBtn);
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", initDefaultTab);
+    } else {
+      initDefaultTab();
     }
     
     // ==========================================
