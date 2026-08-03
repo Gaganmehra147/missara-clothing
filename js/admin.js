@@ -104,12 +104,6 @@ window.switchPanel = function(panelId, btnElement) {
     renderEmailLogsTable();
   } else if (panelId === "payment-settings") {
     loadPaymentSettingsForm();
-  } else if (panelId === "pos-counter") {
-    if (typeof loadPOSProducts === "function") loadPOSProducts();
-    const barcodeInput = document.getElementById("pos-barcode-input");
-    if (barcodeInput) setTimeout(() => barcodeInput.focus(), 200);
-  } else if (panelId === "pos-bills-history") {
-    if (typeof loadPOSBillsHistory === "function") loadPOSBillsHistory();
   }
 };
 
