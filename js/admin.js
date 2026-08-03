@@ -807,8 +807,8 @@ async function renderCRMOrdersTable() {
             </div>
           ` : ''}
         </td>
-        <td style="vertical-align:top; text-align:center;">
-          <button type="button" class="btn btn-secondary" onclick="deleteOrder('${order.orderId}')" style="color:#E53E3E; border-color:#FEB2B2; background-color:#FFF5F5; padding: 6px 12px; font-size: 0.8rem; border-radius:4px; font-weight:600; width:auto; cursor:pointer;" title="Delete Order">
+        <td style="vertical-align:top; text-align:center; white-space:nowrap; padding: 12px 10px;">
+          <button type="button" class="btn btn-secondary" onclick="deleteOrder('${order.orderId}')" style="color:#E53E3E; border-color:#FEB2B2; background-color:#FFF5F5; padding: 7px 14px; font-size: 0.82rem; border-radius:4px; font-weight:600; width:auto; display:inline-flex; align-items:center; gap:5px; cursor:pointer;" title="Delete Order">
             <i class="fas fa-trash-alt"></i> Delete
           </button>
         </td>
