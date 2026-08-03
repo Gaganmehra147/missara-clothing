@@ -738,7 +738,7 @@ async function renderCRMOrdersTable() {
   if (orders.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="6" style="text-align:center; padding: 40px; color:var(--text-muted); font-style:italic;">
+        <td colspan="7" style="text-align:center; padding: 40px; color:var(--text-muted); font-style:italic;">
           <i class="fas fa-shopping-bag" style="font-size:2rem; display:block; margin-bottom:10px; color:var(--border-light);"></i>
           No orders received yet.
         </td>
@@ -807,6 +807,11 @@ async function renderCRMOrdersTable() {
             </div>
           ` : ''}
         </td>
+        <td style="vertical-align:top; text-align:center;">
+          <button type="button" class="btn btn-secondary" onclick="deleteOrder('${order.orderId}')" style="color:#E53E3E; border-color:#FEB2B2; background-color:#FFF5F5; padding: 6px 12px; font-size: 0.8rem; border-radius:4px; font-weight:600; width:auto; cursor:pointer;" title="Delete Order">
+            <i class="fas fa-trash-alt"></i> Delete
+          </button>
+        </td>
       </tr>
     `;
   });
@@ -819,6 +824,32 @@ function getStatusBorderColor(status) {
   if (status === "Shipped") return "#ECC94B";
   return "#D14175"; // Pending
 }
+
+window.deleteOrder = async function(orderId) {
+  if (!confirm(`Are you sure you want to delete Order #${orderId}? This action cannot be undone.`)) {
+    return;
+  }
+
+  try {
+    const res = await fetch(`/api/orders/${orderId}`, {
+      method: 'DELETE',
+      headers: {
+        'x-admin-pin': getAdminPin()
+      }
+    });
+
+    if (res.ok) {
+      showToast(`Order #${orderId} deleted successfully!`, "success");
+      renderCRMOrdersTable();
+    } else {
+      const data = await res.json();
+      showToast(data.error || "Failed to delete order", "error");
+    }
+  } catch (err) {
+    console.error("Error deleting order:", err);
+    showToast("Failed to delete order", "error");
+  }
+};
 
 window.updateOrderStatus = async function(orderId, newStatus) {
   if (newStatus === "Shipped") {

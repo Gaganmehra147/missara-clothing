@@ -1290,6 +1290,31 @@ app.put('/api/orders/:id/status', validateAdminPIN, async (req, res) => {
   }
 });
 
+// Delete order (Admin only)
+app.delete('/api/orders/:id', validateAdminPIN, async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    if (isMongoDBActive) {
+      const deletedOrder = await Order.findOneAndDelete({ orderId: orderId });
+      if (!deletedOrder) {
+        return res.status(404).json({ error: 'Order not found' });
+      }
+      return res.json({ success: true, message: `Order ${orderId} deleted successfully` });
+    } else {
+      let orders = db.getOrders();
+      const initialLength = orders.length;
+      orders = orders.filter(o => o.orderId !== orderId);
+      if (orders.length === initialLength) {
+        return res.status(404).json({ error: 'Order not found' });
+      }
+      db.saveOrders(orders);
+      return res.json({ success: true, message: `Order ${orderId} deleted successfully` });
+    }
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ==========================================
 // SETTINGS API ENDPOINTS
 // ==========================================
